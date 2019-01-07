@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+	<title>Consumer Manual Tester</title>
+	<meta name="viewport" content="initial-scale=1.0">
+	<meta charset="utf-8">
+	<script src="/static/js/common.js"></script>
+	<script src="https://maps.googleapis.com/maps/api/js?key={{.APIKEY}}"></script>
+	<script>
+window.onload = function(){
+	changeLocation();
+};
+	</script>
+	<style>
+#map {
+	height: 500px;
+	width: auto;
+}
+	</style>
+</head>
+<body>
+	<div id="currentLat"></div>
+	<div id="currentLon"></div>
+	<div id="map"></div>
+	<form name="update">
+		<input type="button" value="マップ変更" onClick="changeLocation()">
+	</form>
+</body>
+</html>
