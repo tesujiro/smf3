@@ -40,11 +40,30 @@ var doPost = function(jsonArray){
 	console.log('doPost:'+jsonArray.length);
 	if (jsonArray.length==0) return;
 	var req = new XMLHttpRequest();
+	var callback = function(response){
+		let result = JSON.parse(response);
+		for (i=0;i<result.list.length;i++){
+			let location = result.list[i]
+			//console.log("location.lat="+location.lat)
+			var circle = new google.maps.Circle({
+				strokeColor: '#0000FF',
+				strokeOpacity: 0.8,
+				strokeWeight: 1,
+				fillColor: '#0000FF',
+				fillOpacity: 0.35,
+				//map: map,
+				center: {lat: location.lat, lng:location.lon},
+				radius: 5
+			});
+			addShape(circle);
+		}
+	}
 	req.onreadystatechange = function() {
 		if (req.readyState == 4) { // finished sending
 			console.log("req.status="+req.status);
 			if (req.status == 200) {
 				console.log(req.responseText);
+            			callback(req.responseText);
 			}
 		}else{
 			console.log("通信中...");

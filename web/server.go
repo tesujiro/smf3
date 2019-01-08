@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
 	"strconv"
@@ -60,6 +62,42 @@ func (s *server) manual() http.HandlerFunc {
 	}
 }
 
+type jsonmap map[string]interface{}
+
+func pseudoClient() string {
+	dogenzaka := []jsonmap{
+		{"lat": 35.6591536, "lon": 139.69818840000002},
+		{"lat": 35.6591365, "lon": 139.69812520000002},
+		{"lat": 35.6591022, "lon": 139.697998},
+		{"lat": 35.6590627, "lon": 139.6978704},
+		{"lat": 35.6590219, "lon": 139.6977639},
+		{"lat": 35.659004200000005, "lon": 139.6977287},
+		{"lat": 35.6589497, "lon": 139.6976223},
+		{"lat": 35.6588903, "lon": 139.6975169},
+		{"lat": 35.658733000000005, "lon": 139.6973049},
+		{"lat": 35.6586986, "lon": 139.69726070000002},
+		{"lat": 35.6585612, "lon": 139.6970843},
+		{"lat": 35.6584173, "lon": 139.696921},
+		{"lat": 35.658166800000004, "lon": 139.696693},
+		{"lat": 35.6578986, "lon": 139.69648600000002},
+		{"lat": 35.6578357, "lon": 139.69643480000002},
+		{"lat": 35.6576721, "lon": 139.69630170000002},
+		{"lat": 35.6575015, "lon": 139.69616290000002},
+		{"lat": 35.6573663, "lon": 139.69605380000002},
+		{"lat": 35.657306600000005, "lon": 139.69601360000001},
+	}
+	list := []jsonmap{}
+	for i := 0; i < 3; i++ {
+		list = append(list, dogenzaka[rand.Intn(len(dogenzaka))])
+	}
+	m := jsonmap{"list": list}
+	j, err := json.Marshal(m)
+	if err != nil {
+		fmt.Printf("json.Marshall error:%v\n", err)
+	}
+	return fmt.Sprintf(string(j))
+}
+
 func (s *server) handleLocation() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Location Received:")
@@ -89,5 +127,6 @@ func (s *server) handleLocation() http.HandlerFunc {
 		log.Printf("Content-Body:%s", body)
 
 		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, pseudoClient())
 	}
 }

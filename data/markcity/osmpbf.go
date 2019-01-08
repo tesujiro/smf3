@@ -93,9 +93,9 @@ func getWays(nodes []*osmpbf.Node) []*osmpbf.Way {
 		log.Fatal(err)
 	}
 
-	node_map := make(map[int64]bool, len(nodes))
+	node_map := make(map[int64]location, len(nodes))
 	for _, n := range nodes {
-		node_map[n.ID] = true
+		node_map[n.ID] = location{lat: n.Lat, lon: n.Lon}
 	}
 
 	for {
@@ -109,9 +109,19 @@ func getWays(nodes []*osmpbf.Node) []*osmpbf.Way {
 			case *osmpbf.Way:
 				w := (*osmpbf.Way)(v)
 				for _, id := range w.NodeIDs {
-					if node_map[id] {
+					if _, ok := node_map[id]; ok {
 						ways = append(ways, w)
-						fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w.Tags)
+						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
+						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w.Tags)
+						// Dogenzaka
+						if w.ID == 32621715 {
+							fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
+							for _, v := range w.NodeIDs {
+								if location, ok := node_map[v]; ok {
+									fmt.Printf("\"lat\":%v, \"lon\": %v\n", location.lat, location.lon)
+								}
+							}
+						}
 						break
 					}
 				}
