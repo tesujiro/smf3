@@ -8,7 +8,7 @@
 	<script src="https://maps.googleapis.com/maps/api/js?key={{.APIKEY}}"></script>
 	<script>
 window.onload = function(){
-	changeLocation();
+	initMap();
 };
 	</script>
 	<style>
@@ -23,7 +23,7 @@ window.onload = function(){
 	<div id="currentLon"></div>
 	<div id="map"></div>
 	<form name="update">
-		<input type="button" value="マップ変更" onClick="changeLocation()">
+		<input type="button" value="Reset" onClick="initMap()">
 	</form>
 </body>
 </html>

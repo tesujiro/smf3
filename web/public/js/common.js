@@ -1,10 +1,39 @@
 var map;
+const centerLatitude=35.6581;
+const centerLongitude=139.6975;
+var shapes;
 
-var changeMap = function(lat,lng){
+var addShape = function(shape){
+	shape.setMap(map);
+	var now = Date.now()
+	shapes.push({validThru:now+5*1000, shape:shape});
+	while( shapes[0].validThru < now ){
+		let v = shapes[0]
+		console.log("delete:"+v.validThru)
+		v.shape.setMap(null)
+		shapes.shift()
+	}
+}
+
+var drawMap = function(lat,lng){
 	map = new google.maps.Map(document.getElementById('map'), {
 		center: {lat: lat, lng: lng},
-		zoom: 14
+		mapTypeControl: false,
+		zoom: 18
 	});
+	// Google Mapで情報ウインドウの表示、非表示の切り替え
+	// https://hacknote.jp/archives/19977/
+	(function fixInfoWindow() {
+	var set = google.maps.InfoWindow.prototype.set;
+	google.maps.InfoWindow.prototype.set = function(key, val) {
+		if (key === "map") {
+			if (! this.get("noSuppress")) {
+				return;
+			}
+		}
+		set.apply(this, arguments);
+	}
+	}());
 }
 
 var doPost = function(jsonArray){
@@ -21,7 +50,7 @@ var doPost = function(jsonArray){
 			console.log("通信中...");
 		}
 	}
-	req.open('POST', '/consumer/GeoCollection', true);
+	req.open('POST', '/location', true);
 	req.setRequestHeader("Content-type", "application/json");
 	var parameters = JSON.stringify(jsonArray);
 	req.send(parameters);
@@ -30,8 +59,8 @@ var doPost = function(jsonArray){
 function geoInfo() {
 	this.json = [];
 	this.postTimer = 0;
-	//this.Interval = 5000; // 5 seconds
-	this.Interval = 60000; // 60 seconds
+	this.Interval = 5000; // 5 seconds
+	//this.Interval = 60000; // 60 seconds
 };
 geoInfo.prototype = {
 	//json      : [] ,
@@ -63,67 +92,32 @@ geoInfo.prototype = {
 	}
 }
 
-var changeLocation = function() {
+var initMap = function() {
 
 	var info = new geoInfo();
-	var currentPos;
-	var geoSuccess = function(position) {
-		currentPos = position;
-		console.log('Lat=' + currentPos.coords.latitude + ' Lng=' + currentPos.coords.longitude);
-		document.getElementById('currentLat').innerHTML = currentPos.coords.latitude;
-		document.getElementById('currentLon').innerHTML = currentPos.coords.longitude;
-		changeMap(currentPos.coords.latitude,currentPos.coords.longitude);
-		// Update lat/long value of div when anywhere in the map is clicked
-		google.maps.event.addListener(map,'click',function(event) {
-			document.getElementById('currentLat').innerHTML = event.latLng.lat();
-			document.getElementById('currentLon').innerHTML = event.latLng.lng();
-			info.pushJson(1 ,new Date() , event.latLng.lat() , event.latLng.lng());
+	shapes=[]
+	console.log('Lat=' + centerLatitude + ' Lng=' + centerLongitude);
+	drawMap(centerLatitude,centerLongitude);
+
+	// Update lat/long value of div when anywhere in the map is clicked
+	google.maps.event.addListener(map,'click',function(event) {
+		var lat = event.latLng.lat();
+		var lng = event.latLng.lng();
+		//document.getElementById('currentLat').innerHTML = lat;
+		//document.getElementById('currentLon').innerHTML = lng;
+		info.pushJson(1 ,new Date() , lat , lng);
+		var circle = new google.maps.Circle({
+			strokeColor: '#FF0000',
+			strokeOpacity: 0.8,
+			strokeWeight: 1,
+			fillColor: '#FF0000',
+			fillOpacity: 0.35,
+			//map: map,
+			center: {lat: lat, lng:lng},
+			radius: 2
 		});
-		info.startPost();
-	};
-	navigator.geolocation.getCurrentPosition(geoSuccess,function (err) { alert(err.message); },{ enableHighAccuracy: true, timeout : 5000 });
+		addShape(circle);
+	});
+	info.startPost();
 };
 
-function autoPost() {
-	this.info = new geoInfo();
-	//this.Interval = 1000; // 1 second
-	this.Interval = 10000; // 10 seconds
-	this.postTimer = 0;
-};
-
-autoPost.prototype = {
-	stopAutoPostTimer : function() {
-		clearTimeout(this.postTimer);
-		this.postTimer = 0;
-	},
-	autoGeo : function() {
-		var geoSuccess = function(position) {
-			currentPos = position;
-			console.log('Lat=' + currentPos.coords.latitude + ' Lng=' + currentPos.coords.longitude);
-			document.getElementById('currentLat').innerHTML = currentPos.coords.latitude;
-			document.getElementById('currentLon').innerHTML = currentPos.coords.longitude;
-			this.info.pushJson(1 ,new Date() , currentPos.coords.latitude ,currentPos.coords.longitude); 
-			this.postTimer=setTimeout(this.autoGeo.bind(this), this.Interval);
-		};
-		navigator.geolocation.getCurrentPosition(geoSuccess.bind(this));
-	},
-	start : function() {
-		this.stopAutoPostTimer(); // avoid duplicate timer
-		this.info.stopPostTimer();
-		this.postTimer = setTimeout(this.autoGeo.bind(this), this.Interval);
-		this.info.startPost();
-	},
-	stop : function() {
-		this.stopAutoPostTimer();
-		this.info.stopPostTimer();
-	}
-}
-
-var post ;
-var startAutoPost = function() {
-	post = new autoPost();
-	post.start()
-};
-var stopAutoPost = function() {
-	post.stop()
-};
