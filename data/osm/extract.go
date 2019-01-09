@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	// Shibuya MarkCity
 	lat_center = 35.6581
 	lon_center = 139.6975
 	//lat_width  = 0.0011
@@ -25,10 +26,6 @@ const (
 	lat_max = lat_center + lat_width
 	lon_min = lon_center - lon_width
 	lon_max = lon_center + lon_width
-	//lat_min    = 35.6570
-	//lat_max    = 35.6592
-	//lon_min    = 139.6960
-	//lon_max    = 139.6990
 )
 
 //const filepath = "/Users/tesujiro/Downloads/JP"
@@ -38,16 +35,6 @@ type location struct {
 	lat float64
 	lon float64
 }
-
-type jsonmap map[string]interface{}
-
-/*
-	j, err := json.Marshal(m)
-	if err != nil {
-		fmt.Printf("json.Marshall error:%v\n", err)
-	}
-	return fmt.Sprintf(string(j))
-*/
 
 func inArea(lat, lon float64) bool {
 	return (lat_min <= lat && lat <= lat_max) &&
@@ -107,13 +94,6 @@ func getNodes() []*osmpbf.Node {
 		} else {
 			switch v := v.(type) {
 			case *osmpbf.Node:
-				// Process Node v.
-				/*
-					if len(v.Tags) > 2 {
-						//fmt.Printf("Node: %#v\n", v)
-						//fmt.Printf("Node: Lat %#v Lon %#v\n", v.Lat, v.Lon)
-					}
-				*/
 				if inArea(v.Lat, v.Lon) {
 					nodes = append(nodes, (*osmpbf.Node)(v))
 					//fmt.Printf("Node: %#v\n", v)
@@ -167,20 +147,6 @@ func getWays(nodes []*osmpbf.Node) []*osmpbf.Way {
 							continue
 						}
 						ways = append(ways, w)
-						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
-						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w.Tags)
-						// Dogenzaka
-						//if w.ID == 32621715 {
-						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
-						/*j
-						for _, v := range w.NodeIDs {
-							if location, ok := node_map[v]; ok {
-								//fmt.Printf("\"lat\":%v, \"lon\": %v\n", location.lat, location.lon)
-								fmt.Printf("node:%v\tlat:%v\tlan:%v\n", v, location.lat, location.lon)
-							}
-						}
-						*/
-						//}
 						break
 					}
 				}
@@ -206,6 +172,8 @@ func makeJson(object interface{}, path string) error {
 	fmt.Printf("Write file succeeded: %v\n", path)
 	return nil
 }
+
+type jsonmap map[string]interface{}
 
 func clientInfo(node_map map[int64]*osmpbf.Node, ways []*osmpbf.Way) interface{} {
 	info := make([]jsonmap, len(ways)) //TODO: pointer?? like []*jsonmap for performance
