@@ -1,8 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
@@ -24,6 +26,16 @@ type location struct {
 	lat float64
 	lon float64
 }
+
+type jsonmap map[string]interface{}
+
+/*
+	j, err := json.Marshal(m)
+	if err != nil {
+		fmt.Printf("json.Marshall error:%v\n", err)
+	}
+	return fmt.Sprintf(string(j))
+*/
 
 func inArea(lat, lon float64) bool {
 	return (lat_min <= lat && lat <= lat_max) &&
@@ -114,14 +126,17 @@ func getWays(nodes []*osmpbf.Node) []*osmpbf.Way {
 						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
 						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w.Tags)
 						// Dogenzaka
-						if w.ID == 32621715 {
-							fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
-							for _, v := range w.NodeIDs {
-								if location, ok := node_map[v]; ok {
-									fmt.Printf("\"lat\":%v, \"lon\": %v\n", location.lat, location.lon)
-								}
+						//if w.ID == 32621715 {
+						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
+						/*j
+						for _, v := range w.NodeIDs {
+							if location, ok := node_map[v]; ok {
+								//fmt.Printf("\"lat\":%v, \"lon\": %v\n", location.lat, location.lon)
+								fmt.Printf("node:%v\tlat:%v\tlan:%v\n", v, location.lat, location.lon)
 							}
 						}
+						*/
+						//}
 						break
 					}
 				}
@@ -134,10 +149,50 @@ func getWays(nodes []*osmpbf.Node) []*osmpbf.Way {
 	return ways
 }
 
+func makeJson(object interface{}, path string) error {
+	data, err := json.Marshal(object)
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path, data, os.ModePerm)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Write file succeeded: %v\n", path)
+	return nil
+}
+
+func clientInfo(node_map map[int64]*osmpbf.Node, ways []*osmpbf.Way) interface{} {
+	info := make([]jsonmap, len(ways)) //TODO: pointer?? like []*jsonmap for performance
+	for k, w := range ways {
+		jm := jsonmap{}
+		jm["ID"] = w.ID
+		jm["Tags"] = w.Tags
+		nodes := make([]*osmpbf.Node, len(w.NodeIDs))
+		for l, id := range w.NodeIDs {
+			if v, ok := node_map[id]; ok {
+				nodes[l] = v
+			} // TODO: nil ??
+		}
+		jm["Nodes"] = nodes
+		info[k] = jm
+	}
+	return info
+}
+
 func main() {
 
 	nodes := getNodes()
 	fmt.Printf("Nodes: %v\n", len(nodes))
+
 	ways := getWays(nodes)
 	fmt.Printf("Ways: %v\n", len(ways))
+
+	node_map := make(map[int64]*osmpbf.Node, len(nodes))
+	for _, n := range nodes {
+		node_map[n.ID] = n
+	}
+
+	makeJson(clientInfo(node_map, ways), "ways.json")
 }
