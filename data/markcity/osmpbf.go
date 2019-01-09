@@ -13,10 +13,22 @@ import (
 )
 
 const (
-	lat_min = 35.6570
-	lat_max = 35.6592
-	lon_min = 139.6960
-	lon_max = 139.6990
+	lat_center = 35.6581
+	lon_center = 139.6975
+	//lat_width  = 0.0011
+	lat_width = 0.0055
+	//lat_width = 0.011
+	//lon_width  = 0.0015
+	lon_width = 0.0060
+	//lon_width = 0.015
+	lat_min = lat_center - lat_width
+	lat_max = lat_center + lat_width
+	lon_min = lon_center - lon_width
+	lon_max = lon_center + lon_width
+	//lat_min    = 35.6570
+	//lat_max    = 35.6592
+	//lon_min    = 139.6960
+	//lon_max    = 139.6990
 )
 
 //const filepath = "/Users/tesujiro/Downloads/JP"
@@ -40,6 +52,35 @@ type jsonmap map[string]interface{}
 func inArea(lat, lon float64) bool {
 	return (lat_min <= lat && lat <= lat_max) &&
 		(lon_min <= lon && lon <= lon_max)
+}
+
+func isFootway(way *osmpbf.Way) bool {
+	if _, ok := way.Tags["building"]; ok {
+		return false
+	}
+	if _, ok := way.Tags["leisure"]; ok {
+		return true
+	}
+	//return true
+	return way.Tags["highway"] == "footway" ||
+		way.Tags["highway"] == "pedestrian" ||
+		way.Tags["highway"] == "steps" ||
+		way.Tags["highway"] == "path" ||
+		way.Tags["highway"] == "unclassified" ||
+		way.Tags["highway"] == "primary" ||
+		way.Tags["highway"] == "trunk" ||
+		way.Tags["highway"] == "trunk_link" ||
+		way.Tags["highway"] == "tertiary" ||
+		way.Tags["highway"] == "service" ||
+		way.Tags["highway"] == "residential" ||
+		way.Tags["sidewalk"] == "both" ||
+		way.Tags["sidewalk"] == "left" ||
+		way.Tags["sidewalk"] == "right" ||
+		way.Tags["foot"] == "yes" ||
+		way.Tags["indoor"] == "yes" ||
+		way.Tags["bridge"] == "viaduct" ||
+		way.Tags["public_transport"] == "platform" ||
+		way.Tags["railway"] == "platform"
 }
 
 func getNodes() []*osmpbf.Node {
@@ -122,6 +163,9 @@ func getWays(nodes []*osmpbf.Node) []*osmpbf.Way {
 				w := (*osmpbf.Way)(v)
 				for _, id := range w.NodeIDs {
 					if _, ok := node_map[id]; ok {
+						if !isFootway(w) {
+							continue
+						}
 						ways = append(ways, w)
 						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w)
 						//fmt.Printf("Way(node:%v): %#v\n", len(w.NodeIDs), w.Tags)

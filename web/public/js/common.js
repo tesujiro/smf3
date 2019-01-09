@@ -42,34 +42,27 @@ var doPost = function(jsonArray){
   var req = new XMLHttpRequest();
   var callback = function(response){
     let result = JSON.parse(response);
+    //console.log("result="+result)
     //console.log("result.length="+result.length)
     for (i=0;i<result.length;i++){
       let way = result[i]
       // Skip building
-      //if (way.Tags.building == "yes") continue;
       if (way.Tags.building ) continue;
-      //if (way.Tags.highway != "footway") continue;
 
-      //console.log("way.ID:"+way.ID)
-      //console.log("way.Nodes.length:"+way.Nodes.length)
       let lines =[];
       for (j=0;j<way.Nodes.length;j++){
         let node = way.Nodes[j]
-          //console.log("node.lat="+node.lat)
         if(node){
           lines.push({lat: node.Lat, lng:node.Lon})
-          //console.log("node="+node)
           var circle = new google.maps.Circle({
             strokeColor: '#0000FF',
             strokeOpacity: 0.8,
             strokeWeight: 1,
             fillColor: '#0000FF',
             fillOpacity: 0.35,
-            //map: map,
             center: {lat: node.Lat, lng:node.Lon},
             radius: 2
           });
-          //addShape(circle);
           circle.setMap(map);
 
           circle.addListener('click', function(e) {
@@ -83,12 +76,24 @@ var doPost = function(jsonArray){
 
       let color;
       if ( way.Tags.highway == "footway"
+        || way.Tags.highway == "pedestrian"
+        || way.Tags.highway == "steps"
+        || way.Tags.highway == "path"
         || way.Tags.highway == "unclassified"
+        || way.Tags.highway == "primary"
+        || way.Tags.highway == "trunk"
+        || way.Tags.highway == "trunk_link"
+        || way.Tags.highway == "tertiary"
         || way.Tags.highway == "service"
         || way.Tags.highway == "residential"
         || way.Tags.sidewalk == "both"
         || way.Tags.sidewalk == "left"
         || way.Tags.sidewalk == "right"
+        || way.Tags.foot == "yes"
+        || way.Tags.indoor == "yes"
+        || way.Tags.bridge == "viaduct"
+        || way.Tags.public_transport == "platform"
+        || way.Tags.railway == "platform"
       ) {
         color = '#0000FF'
       } else {
