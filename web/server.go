@@ -64,7 +64,7 @@ func (s *server) manual() http.HandlerFunc {
 type jsonmap map[string]interface{}
 
 func pseudoClient() ([]byte, error) {
-	path := "../data/osm/ways.json"
+	path := "../data/osm/ways_on_browser.json"
 	return ioutil.ReadFile(path)
 }
 

@@ -1,2 +1,2 @@
 all:
-	go run osmpbf.go
+	go run extract.go

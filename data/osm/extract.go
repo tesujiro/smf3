@@ -206,5 +206,5 @@ func main() {
 		node_map[n.ID] = n
 	}
 
-	makeJson(clientInfo(node_map, ways), "ways.json")
+	makeJson(clientInfo(node_map, ways), "ways_on_browser.json")
 }
