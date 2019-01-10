@@ -197,14 +197,15 @@ func main() {
 
 	nodes := getNodes()
 	fmt.Printf("Nodes: %v\n", len(nodes))
+	makeJson(nodes, "nodes.json")
 
 	ways := getWays(nodes)
 	fmt.Printf("Ways: %v\n", len(ways))
+	makeJson(ways, "ways.json")
 
 	node_map := make(map[int64]*osmpbf.Node, len(nodes))
 	for _, n := range nodes {
 		node_map[n.ID] = n
 	}
-
 	makeJson(clientInfo(node_map, ways), "ways_on_browser.json")
 }
