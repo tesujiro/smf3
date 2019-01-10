@@ -36,9 +36,10 @@ var drawMap = function(lat,lng){
   }());
 }
 
-var doPost = function(jsonArray){
-  console.log('doPost:'+jsonArray.length);
-  if (jsonArray.length==0) return;
+//var doPost = function(jsonArray){
+var doPost = function(url,jsonArray,handleFunc){
+  //console.log('doPost:'+jsonArray.length);
+  //if (jsonArray.length==0) return;
   var req = new XMLHttpRequest();
   var callback = function(response){
     let result = JSON.parse(response);
@@ -75,26 +76,7 @@ var doPost = function(jsonArray){
       }
 
       let color;
-      if ( way.Tags.highway == "footway"
-        || way.Tags.highway == "pedestrian"
-        || way.Tags.highway == "steps"
-        || way.Tags.highway == "path"
-        || way.Tags.highway == "unclassified"
-        || way.Tags.highway == "primary"
-        || way.Tags.highway == "trunk"
-        || way.Tags.highway == "trunk_link"
-        || way.Tags.highway == "tertiary"
-        || way.Tags.highway == "service"
-        || way.Tags.highway == "residential"
-        || way.Tags.sidewalk == "both"
-        || way.Tags.sidewalk == "left"
-        || way.Tags.sidewalk == "right"
-        || way.Tags.foot == "yes"
-        || way.Tags.indoor == "yes"
-        || way.Tags.bridge == "viaduct"
-        || way.Tags.public_transport == "platform"
-        || way.Tags.railway == "platform"
-      ) {
+      if ( isFootway(way.Tags) ){
         color = '#0000FF'
       } else {
         color = '#00FFFF'
@@ -123,13 +105,14 @@ var doPost = function(jsonArray){
       console.log("req.status="+req.status);
       if (req.status == 200) {
         //console.log(req.responseText);
-        callback(req.responseText);
+        //callback(req.responseText);
+        handleFunc(req.responseText);
       }
     }else{
       console.log("通信中...");
     }
   }
-  req.open('POST', '/location', true);
+  req.open('POST', url, true);
   req.setRequestHeader("Content-type", "application/json");
   var parameters = JSON.stringify(jsonArray);
   req.send(parameters);
@@ -165,8 +148,10 @@ geoInfo.prototype = {
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   },
   post          : function() {
-    doPost(this.json);
-    this.clearJson();
+    if (this.json.length>0){
+      doPost('/location',this.json,function(){});
+      this.clearJson();
+    };
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
 }

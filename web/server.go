@@ -32,6 +32,7 @@ func (s *server) routes() {
 	s.router.HandleFunc("/greet", s.handleHello())
 	s.router.HandleFunc("/manual", s.manual())
 	s.router.HandleFunc("/location", s.handleLocation())
+	s.router.HandleFunc("/footway", s.handleFootway())
 	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 }
 
@@ -63,7 +64,7 @@ func (s *server) manual() http.HandlerFunc {
 
 type jsonmap map[string]interface{}
 
-func pseudoClient() ([]byte, error) {
+func getFootway() ([]byte, error) {
 	path := "../data/osm/ways_on_browser.json"
 	return ioutil.ReadFile(path)
 }
@@ -95,14 +96,22 @@ func (s *server) handleLocation() http.HandlerFunc {
 		}
 		log.Printf("Content-Length:%v", length)
 		log.Printf("Content-Body:%s", body)
+	}
+}
+
+func (s *server) handleFootway() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Footway Request:")
 
 		w.WriteHeader(http.StatusOK)
-		data, err := pseudoClient()
+
+		data, err := getFootway()
 		if err != nil {
-			log.Printf("read json failed!!")
+			log.Printf("Read json file failed!!")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		fmt.Fprintf(w, string(data))
+
 	}
 }

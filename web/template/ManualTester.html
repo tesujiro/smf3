@@ -5,6 +5,7 @@
 	<meta name="viewport" content="initial-scale=1.0">
 	<meta charset="utf-8">
 	<script src="/static/js/common.js"></script>
+	<script src="/static/js/footway.js"></script>
 	<script src="https://maps.googleapis.com/maps/api/js?key={{.APIKEY}}"></script>
 	<script>
 window.onload = function(){
@@ -24,6 +25,7 @@ window.onload = function(){
 	<div id="map"></div>
 	<form name="update">
 		<input type="button" value="Reset" onClick="initMap()">
+		<input type="button" value="Footway" onClick="toggleFootway()">
 	</form>
 </body>
 </html>
