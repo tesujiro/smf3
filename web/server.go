@@ -30,7 +30,7 @@ func main() {
 func (s *server) routes() {
 	s.router.HandleFunc("/", s.handleDefault())
 	s.router.HandleFunc("/greet", s.handleHello())
-	s.router.HandleFunc("/manual", s.manual())
+	s.router.HandleFunc("/portal", s.portal())
 	s.router.HandleFunc("/location", s.handleLocation())
 	s.router.HandleFunc("/footway", s.handleFootway())
 	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
@@ -45,11 +45,11 @@ func (s *server) handleHello() http.HandlerFunc {
 func (s *server) handleDefault() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Default Handler!!")
-		http.Redirect(w, r, "/manual", 301)
+		http.Redirect(w, r, "/portal", 301)
 	}
 }
 
-func (s *server) manual() http.HandlerFunc {
+func (s *server) portal() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Consumer Manual Tester Page!!")
 		tpl := template.Must(template.ParseFiles("template/ManualTester.html"))
