@@ -6,10 +6,10 @@ var shapes;
 var addShape = function(shape){
   shape.setMap(map);
   var now = Date.now()
-  shapes.push({validThru:now+5*1000, shape:shape});
+  shapes.push({validThru:now+0.9*1000, shape:shape});
   while( shapes[0].validThru < now ){
     let v = shapes[0]
-    console.log("delete:"+v.validThru)
+    //console.log("delete:"+v.validThru)
     v.shape.setMap(null)
     shapes.shift()
   }
@@ -102,14 +102,14 @@ var doPost = function(url,jsonArray,handleFunc){
   }
   req.onreadystatechange = function() {
     if (req.readyState == 4) { // finished sending
-      console.log("req.status="+req.status);
+      //console.log("req.status="+req.status);
       if (req.status == 200) {
         //console.log(req.responseText);
         //callback(req.responseText);
         handleFunc(req.responseText);
       }
     }else{
-      console.log("通信中...");
+      //console.log("通信中...");
     }
   }
   req.open('POST', url, true);
@@ -121,7 +121,7 @@ var doPost = function(url,jsonArray,handleFunc){
 function geoInfo() {
   this.json = [];
   this.postTimer = 0;
-  this.Interval = 5000; // 5 seconds
+  this.Interval = 1000; // 1 seconds
   //this.Interval = 60000; // 60 seconds
 };
 geoInfo.prototype = {
@@ -147,11 +147,30 @@ geoInfo.prototype = {
     this.stopPostTimer(); // avoid duplicate timer
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   },
+  drawLocations: function(response){
+    //console.log(response);
+    let locations = JSON.parse(response);
+    for(i=0;i<locations.length;i++){
+      let loc=locations[i]
+      //console.log(loc);
+      var circle = new google.maps.Circle({
+        strokeColor: '#000000',
+        strokeOpacity: 0.8,
+        strokeWeight: 1,
+        fillColor: '#000000',
+        fillOpacity: 0.35,
+        //map: map,
+        center: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
+        radius: 3
+      });
+      addShape(circle);
+    }
+  },
   post          : function() {
-    if (this.json.length>0){
-      doPost('/location',this.json,function(){});
+    //if (this.json.length>0){
+      doPost('/location',this.json,this.drawLocations);
       this.clearJson();
-    };
+    //};
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -41,20 +42,29 @@ func db_get(c redis.Conn, key, id string) (string, error) {
 	return string(ret.([]byte)), err
 }
 
-func db_scan(c redis.Conn, key string) ([]string, error) {
+func db_scan(c redis.Conn, key string) (string, error) {
 	ret, err := c.Do("SCAN", key)
 	if err != nil {
-		return []string{}, err
+		return "", err
 	}
 
 	records := ret.([]interface{})[1].([]interface{})
-	jsons := make([]string, len(records))
+	jsons := make([]interface{}, len(records))
 	for i, b := range records {
-		str := string(b.([]interface{})[1].([]byte))
-		jsons[i] = str
-		//fmt.Printf("%v:%s\n", i, str)
+		jsonByteArray := b.([]interface{})[1].([]byte)
+		var loc interface{}
+		err := json.Unmarshal(jsonByteArray, &loc)
+		if err != nil {
+			return "", err
+		}
+		jsons[i] = loc
 	}
 
+	json, err := json.Marshal(jsons)
+	if err != nil {
+		return "", err
+	}
+	return string(json), err
 	/*
 		values, err := c.Do("SCAN", key)
 		values, err := redis.Values(c.Do("SCAN", key))
@@ -68,8 +78,6 @@ func db_scan(c redis.Conn, key string) ([]string, error) {
 			fmt.Printf("[%v]: %#v\n", i, val)
 		}
 	*/
-
-	return jsons, err
 }
 
 func (loc *Location) geoJson() (string, error) {
@@ -123,19 +131,19 @@ func (loc *Location) Set() error {
 
 	return nil
 }
-func ScanLocation() ([]string, error) {
+func ScanLocation() (string, error) {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
 		log.Fatalf("Start tile38-server\n")
-		return []string{}, err
+		return "", err
 	}
 	defer c.Close()
 
 	ret, err := db_scan(c, "location")
 	if err != nil {
 		log.Fatalf("DB SCAN error: %v\n", err)
-		return []string{}, err
+		return "", err
 	}
 	//fmt.Printf("%s\n", ret)
 

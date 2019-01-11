@@ -42,7 +42,7 @@ func newRambler(ID int64, lat, lon float64, nodeID, wayID int64) *rambler {
 }
 
 func (r *rambler) walk(ctx context.Context, nodes map[int64]Node, ways map[int64]Way) {
-	tick := time.NewTicker(time.Millisecond * time.Duration(500)).C
+	tick := time.NewTicker(time.Millisecond * time.Duration(1000)).C
 loop:
 	for {
 		select {

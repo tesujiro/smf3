@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+
+	"github.com/tesujiro/smf3/data/db"
 )
 
 type server struct {
@@ -90,12 +92,20 @@ func (s *server) handleLocation() http.HandlerFunc {
 		body := make([]byte, length)
 		length, err = r.Body.Read(body)
 		if err != nil && err != io.EOF {
-			log.Printf("read failed!!")
+			log.Printf("read failed!!\n")
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		log.Printf("Content-Length:%v", length)
 		log.Printf("Content-Body:%s", body)
+
+		var locationJson string
+		locationJson, err = db.ScanLocation()
+		if err != nil {
+			log.Printf("ScanLocation error: %v\n", err)
+			return
+		}
+		fmt.Fprintf(w, "%s", locationJson)
 	}
 }
 
