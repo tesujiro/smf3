@@ -19,6 +19,8 @@ var drawMap = function(lat,lng){
   map = new google.maps.Map(document.getElementById('map'), {
     center: {lat: lat, lng: lng},
     mapTypeControl: false,
+    zoomControl: false,
+    streetViewControl: false,
     zoom: 18
   });
   // Google Mapで情報ウインドウの表示、非表示の切り替え
