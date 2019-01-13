@@ -55,7 +55,7 @@ var drawFootway = function() {
             fillColor: '#0000FF',
             fillOpacity: 0.35,
             center: {lat: node.Lat, lng:node.Lon},
-            radius: 2
+            radius: 1
           });
           addFootway(circle)
 

@@ -21,7 +21,7 @@ var drawMap = function(lat,lng){
     mapTypeControl: false,
     zoomControl: false,
     streetViewControl: false,
-    zoom: 18
+    zoom: 17
   });
   // Google Mapで情報ウインドウの表示、非表示の切り替え
   // https://hacknote.jp/archives/19977/
@@ -157,13 +157,13 @@ geoInfo.prototype = {
       //console.log(loc);
       var circle = new google.maps.Circle({
         strokeColor: '#000000',
-        strokeOpacity: 0.8,
+        strokeOpacity: 1.0,
         strokeWeight: 1,
-        fillColor: '#000000',
-        fillOpacity: 0.35,
+        fillColor: '#020202',
+        fillOpacity: 0.8,
         //map: map,
         center: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
-        radius: 3
+        radius: 2
       });
       addShape(circle);
     }
