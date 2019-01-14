@@ -4,10 +4,12 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	. "github.com/qedus/osmpbf"
 	"github.com/tesujiro/smf3/data/db"
+	"github.com/tesujiro/smf3/debug"
 )
 
 type rambler struct {
@@ -41,7 +43,7 @@ func newRambler(ID int64, lat, lon float64, nodeID, wayID int64) *rambler {
 	return &rambler
 }
 
-func (r *rambler) walk(ctx context.Context, nodes map[int64]Node, ways map[int64]Way) {
+func (r *rambler) walk(ctx context.Context, nodes map[int64]Node, ways map[int64]Way, node2way map[int64][]int64) {
 	tick := time.NewTicker(time.Millisecond * time.Duration(1000)).C
 loop:
 	for {
@@ -49,8 +51,14 @@ loop:
 		case <-ctx.Done():
 			break loop
 		case <-tick:
-			way := ways[r.curWayID]
-			//node := nodes[r.curNodeID]
+			restNodes := func(nodeID int64, wayID int64) int {
+				for i, nid := range ways[wayID].NodeIDs {
+					if nid == nodeID {
+						return len(ways[wayID].NodeIDs) - i - 1
+					}
+				}
+				return 0
+			}
 			var nextTo func([]int64, int64, bool) int64
 			nextTo = func(ids []int64, nid int64, reached bool) int64 {
 				//fmt.Printf("ids=%v\n", ids)
@@ -66,6 +74,31 @@ loop:
 					return nextTo(ids[1:], nid, reached)
 				}
 			}
+			anotherWayID := func() int64 {
+				/*
+					ways := node2way[r.curNodeID]
+					return ways[rand.Intn(len(ways))]
+				*/
+				if len(node2way[r.curNodeID]) < 2 {
+					return r.curWayID
+				}
+				debug.Printf("take another way\n")
+				others := []int64{}
+				for _, wayID := range node2way[r.curNodeID] {
+					//if wayID != r.curWayID && wayID != r.prevWayID {
+					if restNodes(r.curNodeID, wayID) > 0 {
+						others = append(others, wayID)
+					}
+				}
+				if len(others) == 0 {
+					debug.Printf("take another way --> failed\n")
+					return r.curWayID
+				} else {
+					return others[rand.Intn(len(others))]
+				}
+				/*
+				 */
+			}
 			randomNodeID := func() int64 {
 				for _, node := range nodes {
 					return node.ID
@@ -73,14 +106,50 @@ loop:
 				return 0
 			}
 			var nextNodeID int64
-			if nextNodeID = nextTo(way.NodeIDs, r.curNodeID, false); nextNodeID == 0 {
-				//fmt.Printf("stop point: --> random \n")
-				nextNodeID = randomNodeID()
+
+			/*
+				_ = anotherWayID()
+			*/
+			// TODO: if other way exist , change current way.
+			nextWayID := anotherWayID()
+			r.prevWayID = r.curWayID
+			r.curWayID = nextWayID
+			if restNodes(r.curNodeID, r.curWayID) > 0 {
+				r.backward = false
 			} else {
-				//fmt.Printf("current way: %#v\n", way.Tags)
-				//fmt.Printf("current way node ids: %#v\n", way.NodeIDs)
-				//fmt.Printf("current node: %#v \tnext node: %#v\n", r.curNodeID, nextNodeID)
-				//fmt.Printf(" %#v \t-> %#v\n", r.curNodeID, nextNodeID)
+				r.backward = true
+				debug.Printf("set backward\n")
+			}
+
+			var nodeIDs []int64
+			if !r.backward {
+				nodeIDs = ways[r.curWayID].NodeIDs
+			} else {
+				reverse := func(a []int64) (opp []int64) {
+					for i := len(a)/2 - 1; i >= 0; i-- {
+						opp := len(a) - 1 - i
+						a[i], a[opp] = a[opp], a[i]
+					}
+					return opp
+				}
+				nodeIDs = reverse(ways[r.curWayID].NodeIDs)
+				//_ = reverse(ways[r.curWayID].NodeIDs)
+				//nodeIDs = ways[r.curWayID].NodeIDs
+			}
+			if nextNodeID = nextTo(nodeIDs, r.curNodeID, false); nextNodeID == 0 {
+				//if nextNodeID = nextTo(way.NodeIDs, r.curNodeID, false); nextNodeID == 0 {
+				debug.Printf("stop point: --> random \n")
+				debug.Printf("curNode(ID:%v) curWay(ID:%v):%v\n", r.curNodeID, r.curWayID, ways[r.curWayID].NodeIDs)
+				nextNodeID = randomNodeID()
+				nextWayID := node2way[nextNodeID][0]
+				r.prevWayID = r.curWayID
+				r.curWayID = nextWayID
+				if restNodes(r.curNodeID, r.curWayID) > 0 {
+					r.backward = false
+				} else {
+					r.backward = true
+					//debug.Printf("set backward")
+				}
 			}
 			r.prevNodeID = r.curNodeID
 			r.curNodeID = nextNodeID

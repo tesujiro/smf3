@@ -13,11 +13,12 @@ import (
 	"time"
 
 	. "github.com/qedus/osmpbf"
+	"github.com/tesujiro/smf3/debug"
 )
 
-const number_of_ramblers = 10
+//const number_of_ramblers = 100
 
-//const number_of_ramblers = 1
+const number_of_ramblers = 1
 
 type VirtualCity struct {
 	nodes      map[int64]Node
@@ -107,7 +108,7 @@ func NewVirtualCity(ctx context.Context, latc, lonc, latw, lonw float64) *Virtua
 	for i := 0; i < number_of_ramblers; i++ {
 		r := vc.addRambler(int64(i))
 		//fmt.Printf("i=%v lat=%v lon=%v NodeID=%v\tWayID=%v\ttags=%#v\n", i, r.Lat, r.Lon, r.curNodeID, r.curWayID, vc.ways[r.curWayID].Tags)
-		go r.walk(ctx, vc.nodes, vc.ways)
+		go r.walk(ctx, vc.nodes, vc.ways, vc.node2way)
 	}
 
 	return &vc
@@ -171,6 +172,7 @@ func (vc *VirtualCity) Run(ctx context.Context) error {
 }
 
 func main() {
+	debug.On()
 	defer func() {
 		if err := recover(); err != nil {
 			fmt.Fprintf(os.Stderr, "Error:\n%s", err)

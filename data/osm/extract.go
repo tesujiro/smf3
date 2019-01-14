@@ -16,11 +16,11 @@ const (
 	// Shibuya MarkCity
 	lat_center = 35.6581
 	lon_center = 139.6975
-	//lat_width  = 0.0011
-	lat_width = 0.0022
+	lat_width  = 0.0011
+	//lat_width = 0.0022
 	//lat_width = 0.011
-	//lon_width = 0.0015
-	lon_width = 0.0030
+	lon_width = 0.0015
+	//lon_width = 0.0030
 	//lon_width = 0.015
 	lat_min = lat_center - lat_width
 	lat_max = lat_center + lat_width

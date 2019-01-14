@@ -78,8 +78,8 @@ var drawFootway = function() {
         path: lines,
         geodesic: true,
         strokeColor: color,
-        strokeOpacity: 1.0,
-        strokeWeight: 3
+        strokeOpacity: 0.8,
+        strokeWeight: 2
         });
       addFootway(polyline)
 
