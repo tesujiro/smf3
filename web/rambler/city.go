@@ -13,12 +13,13 @@ import (
 	"time"
 
 	. "github.com/qedus/osmpbf"
+	"github.com/tesujiro/smf3/data/db"
 	"github.com/tesujiro/smf3/debug"
 )
 
-//const number_of_ramblers = 100
+const number_of_ramblers = 100
 
-const number_of_ramblers = 1
+//const number_of_ramblers = 1
 
 type VirtualCity struct {
 	nodes      map[int64]Node
@@ -103,6 +104,11 @@ func NewVirtualCity(ctx context.Context, latc, lonc, latw, lonw float64) *Virtua
 		lon_center: lonc,
 		lat_width:  latw,
 		lon_width:  lonw,
+	}
+
+	// DROP LOCATION
+	if err := db.DropLocation(); err != nil {
+		return nil
 	}
 
 	for i := 0; i < number_of_ramblers; i++ {

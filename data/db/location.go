@@ -80,6 +80,12 @@ func db_scan(c redis.Conn, key string) (string, error) {
 	*/
 }
 
+func db_drop(c redis.Conn, key string) error {
+	ret, err := c.Do("DROP", key)
+	fmt.Printf("%s\n", ret)
+	return err
+}
+
 func (loc *Location) geoJson() (string, error) {
 	json_template := `{
 	"type": "Feature",
@@ -131,6 +137,7 @@ func (loc *Location) Set() error {
 
 	return nil
 }
+
 func ScanLocation() (string, error) {
 	// Connect Tile38
 	c, err := db_connect()
@@ -148,4 +155,21 @@ func ScanLocation() (string, error) {
 	//fmt.Printf("%s\n", ret)
 
 	return ret, nil
+}
+
+func DropLocation() error {
+	// Connect Tile38
+	c, err := db_connect()
+	if err != nil {
+		log.Fatalf("Start tile38-server\n")
+		return err
+	}
+	defer c.Close()
+
+	err = db_drop(c, "location")
+	if err != nil {
+		log.Fatalf("DB DROP error: %v\n", err)
+		return err
+	}
+	return nil
 }
