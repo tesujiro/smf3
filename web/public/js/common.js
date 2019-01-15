@@ -41,73 +41,13 @@ var drawMap = function(lat,lng){
 //var doPost = function(jsonArray){
 var doPost = function(url,jsonArray,handleFunc){
   //console.log('doPost:'+jsonArray.length);
-  //if (jsonArray.length==0) return;
+  console.log('map bound:'+map.getBounds());
   var req = new XMLHttpRequest();
-  var callback = function(response){
-    let result = JSON.parse(response);
-    //console.log("result="+result)
-    //console.log("result.length="+result.length)
-    for (i=0;i<result.length;i++){
-      let way = result[i]
-      // Skip building
-      if (way.Tags.building ) continue;
-
-      let lines =[];
-      for (j=0;j<way.Nodes.length;j++){
-        let node = way.Nodes[j]
-        if(node){
-          lines.push({lat: node.Lat, lng:node.Lon})
-          var circle = new google.maps.Circle({
-            strokeColor: '#0000FF',
-            strokeOpacity: 0.8,
-            strokeWeight: 1,
-            fillColor: '#0000FF',
-            fillOpacity: 0.35,
-            center: {lat: node.Lat, lng:node.Lon},
-            radius: 2
-          });
-          circle.setMap(map);
-
-          circle.addListener('click', function(e) {
-            console.log("Node:===============");
-            for(prop in node.Tags){
-              console.log(" "+prop+": "+node.Tags[prop]);
-            }
-          });
-        }
-      }
-
-      let color;
-      if ( isFootway(way.Tags) ){
-        color = '#0000FF'
-      } else {
-        color = '#00FFFF'
-      }
-      var polyline = new google.maps.Polyline({
-        path: lines,
-        geodesic: true,
-        strokeColor: color,
-        strokeOpacity: 1.0,
-        strokeWeight: 3
-        });
-      //addShape(polyline)
-      polyline.setMap(map);
-
-      polyline.addListener('click', function(e) {
-        console.log("Way:===============");
-        way.strokeWeight=5
-        for(prop in way.Tags){
-          console.log(" "+prop+": "+way.Tags[prop]);
-        }
-      });
-    }
-  }
   req.onreadystatechange = function() {
     if (req.readyState == 4) { // finished sending
       //console.log("req.status="+req.status);
       if (req.status == 200) {
         //console.log(req.responseText);
-        //callback(req.responseText);
         handleFunc(req.responseText);
       }
     }else{
@@ -163,9 +103,19 @@ geoInfo.prototype = {
         fillOpacity: 0.8,
         //map: map,
         center: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
-        radius: 2
+        radius: 2,
       });
       addShape(circle);
+
+      var marker = new google.maps.Marker({
+        position: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
+        flat: true,
+        title: "marker title!!",
+        cursor: "marker cursor!?",
+        label: String(5),
+        //icon: google.maps.SymbolPath.CIRCLE, // error
+      });
+      addShape(marker);
     }
   },
   post          : function() {
