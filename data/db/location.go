@@ -48,7 +48,7 @@ func (loc *Location) Set() error {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
-		log.Fatalf("Start tile38-server\n")
+		log.Fatalf("Connect tile38-server\n")
 		return err
 	}
 	defer c.Close()
@@ -72,7 +72,7 @@ func WithinLocation(s, w, n, e float64) (string, error) {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
-		log.Fatalf("Start tile38-server\n")
+		log.Fatalf("Connect tile38-server\n")
 		return "", err
 	}
 	defer c.Close()
@@ -91,7 +91,7 @@ func DropLocation() error {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
-		log.Fatalf("Start tile38-server\n")
+		log.Fatalf("Connect tile38-server\n")
 		return err
 	}
 	defer c.Close()
