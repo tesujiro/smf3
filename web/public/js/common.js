@@ -69,7 +69,7 @@ function geoInfo() {
 };
 
 geoInfo.prototype = {
-  clearJson : function() {
+  clearRequest : function() {
     this.request={
       bounds: {},
       flyers: [],
@@ -79,12 +79,15 @@ geoInfo.prototype = {
     this.request.bounds=bounds;
     //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
   },
-  pushFlyer  : function(id,time,lat,lng){
+  pushFlyer  : function(id,time,lat,lng,title,distance){
     this.request.flyers.push({
-      "consumerId"  : id,
+      "storeId"     : id,
+      "title"       : title,
       "timestamp"   : time,
       "latitude"    : lat,
-      "longtitude"  : lng,
+      "longitude"   : lng,
+      "distance"    : distance,
+      "pieces"      : 10,
     });
     //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
   },
@@ -132,7 +135,7 @@ geoInfo.prototype = {
   post          : function() {
     this.setBounds(map.getBounds());
     doPost('/location',this.request,this.drawLocations);
-    this.clearJson();
+    this.clearRequest();
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
 }
@@ -148,9 +151,11 @@ var initMap = function() {
   google.maps.event.addListener(map,'click',function(event) {
     var lat = event.latLng.lat();
     var lng = event.latLng.lng();
-    //document.getElementById('currentLat').innerHTML = lat;
-    //document.getElementById('currentLon').innerHTML = lng;
-    info.pushFlyer(1 ,new Date() , lat , lng);
+    var title = String(document.forms.form1.title.value);
+    var distance = Number(document.forms.form1.distance.value);
+    console.log("title="+title)
+    console.log("distance="+distance)
+    info.pushFlyer(1 ,new Date() , lat, lng, title, distance);
     var circle = new google.maps.Circle({
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,

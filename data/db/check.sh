@@ -1,16 +1,16 @@
 #!/bin/bash
 
-check_location()
+scan()
 {
         local ID=$1
 
         tile38-cli<<EOF
-GET location $ID
+SCAN flyer
 EOF
 }
 
 while :
 do
-        check_location 0
-        sleep 0.2
+        scan | jq
+        sleep 2
 done
