@@ -2,6 +2,7 @@ var map;
 const centerLatitude=35.6581;
 const centerLongitude=139.6975;
 var shapes;
+var flyerIDs;
 
 var addShape = function(shape){
   shape.setMap(map);
@@ -79,11 +80,11 @@ geoInfo.prototype = {
     this.request.bounds=bounds;
     //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
   },
-  pushFlyer  : function(id,time,lat,lng,title,distance){
+  pushFlyer  : function(id,validPeriod,lat,lng,title,distance){
     this.request.flyers.push({
       "storeId"     : id,
       "title"       : title,
-      "timestamp"   : time,
+      "validPeriod" : validPeriod,
       "latitude"    : lat,
       "longitude"   : lng,
       "distance"    : distance,
@@ -100,10 +101,13 @@ geoInfo.prototype = {
     this.stopPostTimer(); // avoid duplicate timer
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   },
-  drawLocations: function(response){
-    //console.log(response);
-    let locations = JSON.parse(response);
-    //console.log("LOCATIONS COUNT:"+locations.length);
+  drawResponse: function(responseJson){
+    //console.log(responseJson);
+    let response = JSON.parse(responseJson);
+    let locations = response.locations;
+    let flyers = response.flyers;
+    //console.log("FLYERS COUNT:"+flyers.length);
+    //
     for(i=0;i<locations.length;i++){
       let loc=locations[i]
       //console.log(loc);
@@ -131,10 +135,40 @@ geoInfo.prototype = {
       addShape(marker);
       */
     }
+
+    //
+    let now=Math.floor((new Date).getTime()/1000);
+    for(i=0;i<flyers.length;i++){
+      let flyer=flyers[i]
+      //console.log(flyer);
+      //console.log("now:"+now);
+      //console.log("start:"+flyer.properties.startAt)
+      //console.log("end:"+flyer.properties.endAt)
+      if ( !flyerIDs[flyer.properties.id] 
+        && flyer.properties.startAt <= now
+        && now <= flyer.properties.endAt
+      ){
+        //console.log("==>WRITE CIRCLE!")
+        flyerIDs[flyer.properties.id]=true;
+        let circle = new google.maps.Circle({
+          strokeColor: '#80FF00',
+          strokeOpacity: 0.6,
+          strokeWeight: 0.4,
+          fillColor: '#80FF00',
+          fillOpacity: 0.3,
+          center: {lat: flyer.geometry.coordinates[1], lng:flyer.geometry.coordinates[0]},
+          radius: flyer.properties.distance,
+        });
+        circle.setMap(map);
+        setTimeout(function(){
+          circle.setMap(null) // Remove Circle
+        }, (flyer.properties.endAt - now)*1000);
+      }
+    }
   },
   post          : function() {
     this.setBounds(map.getBounds());
-    doPost('/location',this.request,this.drawLocations);
+    doPost('/location',this.request,this.drawResponse);
     this.clearRequest();
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
@@ -144,6 +178,7 @@ var initMap = function() {
 
   var info = new geoInfo();
   shapes=[]
+  flyerIDs={}
   console.log('Lat=' + centerLatitude + ' Lng=' + centerLongitude);
   drawMap(centerLatitude,centerLongitude);
 
@@ -153,9 +188,10 @@ var initMap = function() {
     var lng = event.latLng.lng();
     var title = String(document.forms.form1.title.value);
     var distance = Number(document.forms.form1.distance.value);
+    var validPeriod = Number(document.forms.form1.validPeriod.value);
     console.log("title="+title)
     console.log("distance="+distance)
-    info.pushFlyer(1 ,new Date() , lat, lng, title, distance);
+    info.pushFlyer(1 ,validPeriod , lat, lng, title, distance);
     var circle = new google.maps.Circle({
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,

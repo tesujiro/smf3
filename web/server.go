@@ -76,7 +76,7 @@ func getFootway() ([]byte, error) {
 
 func (s *server) handleLocation() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Location Received:")
+		//log.Printf("Location Received:")
 
 		if r.Header.Get("Content-Type") != "application/json" {
 			log.Printf("bad Content-Type!!")
@@ -99,8 +99,8 @@ func (s *server) handleLocation() http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		log.Printf("Content-Length:%v", length)
-		log.Printf("Content-Body:%s", body)
+		//log.Printf("Content-Length:%v", length)
+		//log.Printf("Content-Body:%s", body)
 
 		type Req struct {
 			Bounds map[string]float64 `json:"bounds"`
@@ -117,11 +117,14 @@ func (s *server) handleLocation() http.HandlerFunc {
 
 		bounds := reqInfo.Bounds
 		flyers := reqInfo.Flyers
-		fmt.Printf("request.bounds=%v\n", bounds)
-		fmt.Printf("request.flyers=%v\n", flyers)
+		//fmt.Printf("request.bounds=%v\n", bounds)
+		//fmt.Printf("request.flyers=%v\n", flyers)
 
 		for _, f := range flyers {
-			f.ID = time.Now().Unix() //TODO: temporary
+			now := time.Now().Unix()
+			f.ID = now //TODO: temporary
+			f.StartAt = now
+			f.EndAt = now + f.ValidPeriod
 			if err := f.Set(); err != nil {
 				log.Printf("Set Flyer error: (%v) flyer:%v\n", err, f)
 				return
@@ -134,7 +137,17 @@ func (s *server) handleLocation() http.HandlerFunc {
 			log.Printf("WithiLocation error: %v\n", err)
 			return
 		}
-		fmt.Fprintf(w, "%s", locationJson)
+		//fmt.Fprintf(w, "%s", locationJson)
+
+		var flyerJson string
+		flyerJson, err = db.WithinFlyer(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+		if err != nil {
+			log.Printf("WithiLocation error: %v\n", err)
+			return
+		}
+		//fmt.Fprintf(w, "%s", flyerJson)
+
+		fmt.Fprintf(w, `{"locations": %s,"flyers": %s}`, locationJson, flyerJson)
 	}
 }
 

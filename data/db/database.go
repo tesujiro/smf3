@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/garyburd/redigo/redis"
@@ -70,7 +69,7 @@ func db_within(c redis.Conn, key string, s, w, n, e float64) (string, error) {
 }
 
 func db_drop(c redis.Conn, key string) error {
-	ret, err := c.Do("DROP", key)
-	fmt.Printf("%s\n", ret)
+	_, err := c.Do("DROP", key)
+	//fmt.Printf("%s\n", ret)
 	return err
 }
