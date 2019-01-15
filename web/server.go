@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
@@ -99,10 +100,25 @@ func (s *server) handleLocation() http.HandlerFunc {
 		log.Printf("Content-Length:%v", length)
 		log.Printf("Content-Body:%s", body)
 
+		type Req struct {
+			Bounds map[string]float64       `json:"bounds"`
+			Flyers []map[string]interface{} `json:"flyers"`
+		}
+		var reqInfo Req
+		if err := json.Unmarshal(body, &reqInfo); err != nil {
+			log.Printf("Request body marshaling  error: %v\n", err)
+			return
+		}
+
+		bounds := reqInfo.Bounds
+		//flyers := reqInfo.Flyers
+		fmt.Printf("request.bounds=%v\n", bounds)
+		//fmt.Printf("request.flyers=%v\n", flyers)
+
 		var locationJson string
-		locationJson, err = db.ScanLocation()
+		locationJson, err = db.WithinLocation(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
 		if err != nil {
-			log.Printf("ScanLocation error: %v\n", err)
+			log.Printf("WithiLocation error: %v\n", err)
 			return
 		}
 		fmt.Fprintf(w, "%s", locationJson)

@@ -38,10 +38,8 @@ var drawMap = function(lat,lng){
   }());
 }
 
-//var doPost = function(jsonArray){
-var doPost = function(url,jsonArray,handleFunc){
-  //console.log('doPost:'+jsonArray.length);
-  console.log('map bound:'+map.getBounds());
+var doPost = function(url,requestInfo,handleFunc){
+  //console.log('doPost:'+requestInfo.length);
   var req = new XMLHttpRequest();
   req.onreadystatechange = function() {
     if (req.readyState == 4) { // finished sending
@@ -56,29 +54,39 @@ var doPost = function(url,jsonArray,handleFunc){
   }
   req.open('POST', url, true);
   req.setRequestHeader("Content-type", "application/json");
-  var parameters = JSON.stringify(jsonArray);
+  var parameters = JSON.stringify(requestInfo);
   req.send(parameters);
 }
 
 function geoInfo() {
-  this.json = [];
+  this.request = {
+      bounds: {},
+      flyers: [],
+  };
   this.postTimer = 0;
   this.Interval = 1000; // 1 seconds
   //this.Interval = 60000; // 60 seconds
 };
+
 geoInfo.prototype = {
-  //json      : [] ,
   clearJson : function() {
-    this.json=[];
+    this.request={
+      bounds: {},
+      flyers: [],
+    };
   },
-  pushJson  : function(id,time,lat,lng){
-    this.json.push({
-      "consumerId"  : id ,
-      "timestamp"  : time ,
-      "latitude"  : lat ,
-      "longtitude"  : lng
+  setBounds  : function(bounds){
+    this.request.bounds=bounds;
+    //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
+  },
+  pushFlyer  : function(id,time,lat,lng){
+    this.request.flyers.push({
+      "consumerId"  : id,
+      "timestamp"   : time,
+      "latitude"    : lat,
+      "longtitude"  : lng,
     });
-    //console.log("pushJson:"+this.json.length+" :"+this.json[this.json.length-1]);
+    //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
   },
   //postTimer     : 0,
   stopPostTimer : function() {
@@ -92,6 +100,7 @@ geoInfo.prototype = {
   drawLocations: function(response){
     //console.log(response);
     let locations = JSON.parse(response);
+    //console.log("LOCATIONS COUNT:"+locations.length);
     for(i=0;i<locations.length;i++){
       let loc=locations[i]
       //console.log(loc);
@@ -107,6 +116,7 @@ geoInfo.prototype = {
       });
       addShape(circle);
 
+      /*
       var marker = new google.maps.Marker({
         position: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
         flat: true,
@@ -116,13 +126,13 @@ geoInfo.prototype = {
         //icon: google.maps.SymbolPath.CIRCLE, // error
       });
       addShape(marker);
+      */
     }
   },
   post          : function() {
-    //if (this.json.length>0){
-      doPost('/location',this.json,this.drawLocations);
-      this.clearJson();
-    //};
+    this.setBounds(map.getBounds());
+    doPost('/location',this.request,this.drawLocations);
+    this.clearJson();
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
 }
@@ -140,7 +150,7 @@ var initMap = function() {
     var lng = event.latLng.lng();
     //document.getElementById('currentLat').innerHTML = lat;
     //document.getElementById('currentLon').innerHTML = lng;
-    info.pushJson(1 ,new Date() , lat , lng);
+    info.pushFlyer(1 ,new Date() , lat , lng);
     var circle = new google.maps.Circle({
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,

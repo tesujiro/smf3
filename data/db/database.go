@@ -31,8 +31,8 @@ func db_get(c redis.Conn, key, id string) (string, error) {
 	return string(ret.([]byte)), err
 }
 
-func db_scan(c redis.Conn, key string) (string, error) {
-	ret, err := c.Do("SCAN", key)
+func db_within(c redis.Conn, key string, s, w, n, e float64) (string, error) {
+	ret, err := c.Do("WITHIN", key, "BOUNDS", s, w, n, e)
 	if err != nil {
 		return "", err
 	}

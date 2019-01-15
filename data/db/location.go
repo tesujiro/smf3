@@ -68,7 +68,7 @@ func (loc *Location) Set() error {
 	return nil
 }
 
-func ScanLocation() (string, error) {
+func WithinLocation(s, w, n, e float64) (string, error) {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
@@ -77,9 +77,9 @@ func ScanLocation() (string, error) {
 	}
 	defer c.Close()
 
-	ret, err := db_scan(c, "location")
+	ret, err := db_within(c, "location", s, w, n, e)
 	if err != nil {
-		log.Fatalf("DB SCAN error: %v\n", err)
+		log.Fatalf("DB WITHIN error: %v\n", err)
 		return "", err
 	}
 	//fmt.Printf("%s\n", ret)
