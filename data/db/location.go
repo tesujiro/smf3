@@ -68,7 +68,7 @@ func (loc *Location) Set() error {
 	return nil
 }
 
-func WithinLocation(s, w, n, e float64) ([]interface{}, error) {
+func LocationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
@@ -77,7 +77,7 @@ func WithinLocation(s, w, n, e float64) ([]interface{}, error) {
 	}
 	defer c.Close()
 
-	ret, err := db_within(c, "location", s, w, n, e)
+	ret, err := db_withinBounds(c, "location", s, w, n, e)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

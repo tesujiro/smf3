@@ -148,7 +148,7 @@ func (s *server) handleLocation() http.HandlerFunc {
 
 		var locations []interface{}
 		var locationJson []byte
-		locations, err = db.WithinLocation(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+		locations, err = db.LocationWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
 		if err != nil {
 			log.Printf("WithiLocation error: %v\n", err)
 			return
@@ -162,7 +162,7 @@ func (s *server) handleLocation() http.HandlerFunc {
 
 		var flyers []interface{}
 		var flyerJson []byte
-		flyers, err = db.WithinFlyer(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+		flyers, err = db.FlyerWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
 		if err != nil {
 			log.Printf("WithiLocation error: %v\n", err)
 			return
