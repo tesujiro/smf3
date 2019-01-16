@@ -27,8 +27,8 @@ func (loc *Location) geoJson() (string, error) {
 		]
 	},
 	"properties": {
-		"ID": {{.ID}},
-		"Time": "{{.Time}}"
+		"id": {{.ID}},
+		"time": "{{.Time}}"
 	}
 }`
 	t := template.Must(template.New("location").Parse(json_template))
