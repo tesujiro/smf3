@@ -66,6 +66,12 @@ func db_withinBounds(c redis.Conn, key string, s, w, n, e float64, args ...inter
 	return db_retrieve(c, "WITHIN", key, func_args...)
 }
 
+func db_withinCircle(c redis.Conn, key string, lat, lon, meters float64, args ...interface{}) ([]interface{}, error) {
+	func_args := append([]interface{}{"CIRCLE", lat, lon, meters}, args...)
+	//fmt.Printf("db_withinCircle: func_args(%#v)\n", func_args)
+	return db_retrieve(c, "WITHIN", key, func_args...)
+}
+
 func db_drop(c redis.Conn, key string) error {
 	_, err := c.Do("DROP", key)
 	//fmt.Printf("%s\n", ret)

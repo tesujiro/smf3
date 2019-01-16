@@ -100,6 +100,15 @@ func ScanValidFlyers(currentTime int64) ([]interface{}, error) {
 	//fmt.Printf("%s\n", ret)
 
 	return ret, nil
+	// NG ! GeoJSON != Json of Flyer
+	/*j
+	flyers := make([]Flyer, len(ret))
+	for i, f := range ret {
+		fmt.Printf("f=%#v\n", f)
+		flyers[i] = f.(Flyer)
+	}
+	return flyers, nil
+	*/
 }
 
 func FlyerWithinBounds(s, w, n, e float64) ([]interface{}, error) {

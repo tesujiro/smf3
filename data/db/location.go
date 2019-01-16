@@ -87,6 +87,25 @@ func LocationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	return ret, nil
 }
 
+func LocationWithinCircle(lat, lon, meter float64, args ...interface{}) ([]interface{}, error) {
+	// Connect Tile38
+	c, err := db_connect()
+	if err != nil {
+		log.Fatalf("Connect tile38-server\n")
+		return nil, err
+	}
+	defer c.Close()
+
+	ret, err := db_withinCircle(c, "location", lat, lon, meter, args...)
+	if err != nil {
+		log.Fatalf("DB WITHIN error: %v\n", err)
+		return nil, err
+	}
+	//fmt.Printf("%s\n", ret)
+
+	return ret, nil
+}
+
 func DropLocation() error {
 	// Connect Tile38
 	c, err := db_connect()
