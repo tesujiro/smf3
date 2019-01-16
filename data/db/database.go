@@ -16,22 +16,26 @@ func db_connect() (redis.Conn, error) {
 	return c, nil
 }
 
-func db_set_json(c redis.Conn, key, id, json string) error {
-	_, err := c.Do("SET", key, id, "OBJECT", json)
+func db_set_json(c redis.Conn, key, id, json string, args ...interface{}) error {
+	// see Conn.Do function func signature
+	func_args := append([]interface{}{key, id, "OBJECT", json}, args...)
+	_, err := c.Do("SET", func_args...)
 	//fmt.Printf("%s\n", ret)
 	return err
 }
 
-func db_get(c redis.Conn, key, id string) (string, error) {
-	ret, err := c.Do("GET", key, id)
+func db_get(c redis.Conn, key, id string, args ...interface{}) (string, error) {
+	func_args := append([]interface{}{key, id}, args...)
+	ret, err := c.Do("GET", func_args)
 	if err != nil {
 		return "", err
 	}
 	return string(ret.([]byte)), err
 }
 
-func db_within(c redis.Conn, key string, s, w, n, e float64) (string, error) {
-	ret, err := c.Do("WITHIN", key, "BOUNDS", s, w, n, e)
+func db_retrieve(c redis.Conn, command, key string, args ...interface{}) (string, error) {
+	func_args := append([]interface{}{key}, args...)
+	ret, err := c.Do(command, func_args...)
 	if err != nil {
 		return "", err
 	}
@@ -53,19 +57,15 @@ func db_within(c redis.Conn, key string, s, w, n, e float64) (string, error) {
 		return "", err
 	}
 	return string(json), err
-	/*
-		values, err := c.Do("SCAN", key)
-		values, err := redis.Values(c.Do("SCAN", key))
-		if err != nil {
-			return "", err
-		}
+}
 
-		fmt.Printf("len(values):%v\n", len(values))
-		//for i, val := range values {
-		for i, val := range values[1].([]interface{}) {
-			fmt.Printf("[%v]: %#v\n", i, val)
-		}
-	*/
+func db_scan(c redis.Conn, key string, args ...interface{}) (string, error) {
+	return db_retrieve(c, "SCAN", key, args...)
+}
+
+func db_within(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) (string, error) {
+	func_args := append([]interface{}{"BOUNDS", s, w, n, e}, args...)
+	return db_retrieve(c, "WITHIN", key, func_args...)
 }
 
 func db_drop(c redis.Conn, key string) error {

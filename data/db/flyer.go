@@ -82,6 +82,26 @@ func (fly *Flyer) Set() error {
 	return nil
 }
 
+func ScanValidFlyers(currentTime int64) (string, error) {
+	// Connect Tile38
+	c, err := db_connect()
+	if err != nil {
+		log.Fatalf("Connect tile38-server\n")
+		return "", err
+	}
+	defer c.Close()
+
+	time := fmt.Sprintf("%v", currentTime)
+	ret, err := db_scan(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
+	if err != nil {
+		log.Fatalf("DB Scan error: %v\n", err)
+		return "", err
+	}
+	//fmt.Printf("%s\n", ret)
+
+	return ret, nil
+}
+
 func WithinFlyer(s, w, n, e float64) (string, error) {
 	// Connect Tile38
 	c, err := db_connect()
