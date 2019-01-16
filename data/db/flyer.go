@@ -72,7 +72,7 @@ func (fly *Flyer) Set() error {
 		return err
 	} else {
 		//fmt.Printf("GeoJSON:%v\n", json)
-		err = db_set_json(c, "flyer", fmt.Sprintf("%v", fly.ID), json)
+		err = db_set_json(c, "flyer", fmt.Sprintf("%v", fly.ID), json, "FIELD", "start", fly.StartAt, "FIELD", "end", fly.EndAt)
 		if err != nil {
 			log.Fatalf("SET DB error: %v\n", err)
 			return err
@@ -82,6 +82,7 @@ func (fly *Flyer) Set() error {
 	return nil
 }
 
+/*  NOT TESTED
 func ScanValidFlyers(currentTime int64) (string, error) {
 	// Connect Tile38
 	c, err := db_connect()
@@ -101,6 +102,7 @@ func ScanValidFlyers(currentTime int64) (string, error) {
 
 	return ret, nil
 }
+*/
 
 func WithinFlyer(s, w, n, e float64) (string, error) {
 	// Connect Tile38

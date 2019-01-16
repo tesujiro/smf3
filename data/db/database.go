@@ -18,7 +18,9 @@ func db_connect() (redis.Conn, error) {
 
 func db_set_json(c redis.Conn, key, id, json string, args ...interface{}) error {
 	// see Conn.Do function func signature
-	func_args := append([]interface{}{key, id, "OBJECT", json}, args...)
+	func_args := append([]interface{}{key, id}, args...)
+	func_args = append(func_args, []interface{}{"OBJECT", json}...)
+	//fmt.Printf("func_args:%#v\n", func_args)
 	_, err := c.Do("SET", func_args...)
 	//fmt.Printf("%s\n", ret)
 	return err
