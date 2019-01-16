@@ -68,19 +68,19 @@ func (loc *Location) Set() error {
 	return nil
 }
 
-func WithinLocation(s, w, n, e float64) (string, error) {
+func WithinLocation(s, w, n, e float64) ([]interface{}, error) {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
 		log.Fatalf("Connect tile38-server\n")
-		return "", err
+		return nil, err
 	}
 	defer c.Close()
 
 	ret, err := db_within(c, "location", s, w, n, e)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
-		return "", err
+		return nil, err
 	}
 	//fmt.Printf("%s\n", ret)
 

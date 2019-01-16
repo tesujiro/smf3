@@ -35,37 +35,41 @@ func db_get(c redis.Conn, key, id string, args ...interface{}) (string, error) {
 	return string(ret.([]byte)), err
 }
 
-func db_retrieve(c redis.Conn, command, key string, args ...interface{}) (string, error) {
+//func db_retrieve(c redis.Conn, command, key string, args ...interface{}) (string, error) {
+func db_retrieve(c redis.Conn, command, key string, args ...interface{}) ([]interface{}, error) {
 	func_args := append([]interface{}{key}, args...)
 	ret, err := c.Do(command, func_args...)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	records := ret.([]interface{})[1].([]interface{})
-	jsons := make([]interface{}, len(records))
+	jsonArray := make([]interface{}, len(records))
 	for i, b := range records {
 		jsonByteArray := b.([]interface{})[1].([]byte)
 		var loc interface{}
 		err := json.Unmarshal(jsonByteArray, &loc)
 		if err != nil {
+			return nil, err
+		}
+		jsonArray[i] = loc
+	}
+
+	return jsonArray, err
+	/*
+		json, err := json.Marshal(jsons)
+		if err != nil {
 			return "", err
 		}
-		jsons[i] = loc
-	}
-
-	json, err := json.Marshal(jsons)
-	if err != nil {
-		return "", err
-	}
-	return string(json), err
+		return string(json), err
+	*/
 }
 
-func db_scan(c redis.Conn, key string, args ...interface{}) (string, error) {
+func db_scan(c redis.Conn, key string, args ...interface{}) ([]interface{}, error) {
 	return db_retrieve(c, "SCAN", key, args...)
 }
 
-func db_within(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) (string, error) {
+func db_within(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) ([]interface{}, error) {
 	func_args := append([]interface{}{"BOUNDS", s, w, n, e}, args...)
 	return db_retrieve(c, "WITHIN", key, func_args...)
 }

@@ -133,11 +133,9 @@ func (s *server) handleLocation() http.HandlerFunc {
 		}
 
 		bounds := reqInfo.Bounds
-		flyers := reqInfo.Flyers
 		//fmt.Printf("request.bounds=%v\n", bounds)
-		//fmt.Printf("request.flyers=%v\n", flyers)
 
-		for _, f := range flyers {
+		for _, f := range reqInfo.Flyers {
 			now := time.Now().Unix()
 			f.ID = now //TODO: temporary
 			f.StartAt = now
@@ -148,18 +146,30 @@ func (s *server) handleLocation() http.HandlerFunc {
 			}
 		}
 
-		var locationJson string
-		locationJson, err = db.WithinLocation(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+		var locations []interface{}
+		var locationJson []byte
+		locations, err = db.WithinLocation(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
 		if err != nil {
 			log.Printf("WithiLocation error: %v\n", err)
 			return
 		}
+		locationJson, err = json.Marshal(locations)
+		if err != nil {
+			log.Printf("Location Marshal error: %v\n", err)
+			return
+		}
 		//fmt.Fprintf(w, "%s", locationJson)
 
-		var flyerJson string
-		flyerJson, err = db.WithinFlyer(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+		var flyers []interface{}
+		var flyerJson []byte
+		flyers, err = db.WithinFlyer(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
 		if err != nil {
 			log.Printf("WithiLocation error: %v\n", err)
+			return
+		}
+		flyerJson, err = json.Marshal(flyers)
+		if err != nil {
+			log.Printf("Flyer Marshal error: %v\n", err)
 			return
 		}
 		//fmt.Fprintf(w, "%s", flyerJson)
