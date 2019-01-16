@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/tesujiro/smf3/data/db"
+	"github.com/tesujiro/smf3/match"
 )
 
 type server struct {
@@ -26,10 +28,25 @@ func newServer() *server {
 }
 
 func main() {
-	db.DropFlyer() // DELETE FLYER DATA
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// DELETE FLYER DATA
+	db.DropFlyer()
+
+	// START MATCHING ENGINE
+	matcher := match.NewMatcher(ctx)
+	if err := matcher.Run(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+		return
+	}
+
+	// START WEB SERVER
 	s := newServer()
 	s.routes()
 	http.ListenAndServe("localhost:8000", s.router)
+
+	<-ctx.Done()
 }
 
 func (s *server) routes() {
