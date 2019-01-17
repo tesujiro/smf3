@@ -3,7 +3,8 @@ const centerLatitude=35.6581;
 const centerLongitude=139.6975;
 var shapes;
 var flyerIDs;
-var notifIDs;
+var notifIDs; // Already notified notification IDs
+var notifIDsByUserID;
 
 var addShape = function(shape){
   shape.setMap(map);
@@ -170,6 +171,11 @@ geoInfo.prototype = {
         } else {
           userIDsToNotif[notif.properties.userId].push(notif.properties.id);
         }
+        if (! notifIDsByUserID[notif.properties.userId]) {
+          notifIDsByUserID[notif.properties.userId]=[notif.properties.id];
+        } else {
+          notifIDsByUserID[notif.properties.userId].push(notif.properties.id);
+        }
       }
     }
 
@@ -179,7 +185,8 @@ geoInfo.prototype = {
         flat: true,
         title: "marker title!!",
         cursor: "marker cursor!?",
-        label: String(userIDsToNotif[userId].length),
+        //label: String(userIDsToNotif[userId].length),
+        label: String(notifIDsByUserID[userId].length),
         //icon: google.maps.SymbolPath.CIRCLE, // error
       });
       marker.setMap(map);
@@ -199,9 +206,10 @@ geoInfo.prototype = {
 var initMap = function() {
 
   var info = new geoInfo();
-  shapes=[]
-  flyerIDs={}
-  notifIDs={}
+  shapes=[];
+  flyerIDs={};
+  notifIDs={};
+  notifIDsByUserID={};
   console.log('Lat=' + centerLatitude + ' Lng=' + centerLongitude);
   drawMap(centerLatitude,centerLongitude);
 
