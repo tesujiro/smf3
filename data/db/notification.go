@@ -2,6 +2,7 @@ package db
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -42,6 +43,33 @@ func (n *Notification) geoJson() (string, error) {
 	return tpl.String(), nil
 }
 
+func GetNotification(id string) (*Notification, error) {
+	// Connect Tile38
+	c, err := db_connect()
+	if err != nil {
+		log.Fatalf("Connect tile38-server\n")
+		return nil, err
+	}
+	defer c.Close()
+
+	b, err := db_get(c, "notification", id)
+	if err != nil {
+		log.Fatalf("GET DB error: %v\n", err)
+		return nil, err
+	}
+	if b == nil {
+		return nil, nil
+	}
+
+	var n Notification
+	err = json.Unmarshal(b, &n)
+	if err != nil {
+		log.Fatalf("Unmarshal error: %v\n", err)
+		return nil, err
+	}
+
+	return &n, nil
+}
 func (n *Notification) Set() error {
 	// Connect Tile38
 	c, err := db_connect()

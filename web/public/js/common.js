@@ -89,7 +89,7 @@ geoInfo.prototype = {
       "latitude"    : lat,
       "longitude"   : lng,
       "distance"    : distance,
-      "pieces"      : 10,
+      "stocked"     : 10,
     });
     //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
   },

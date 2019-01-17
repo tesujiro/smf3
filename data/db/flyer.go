@@ -2,6 +2,7 @@ package db
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -19,8 +20,8 @@ type Flyer struct {
 	Lat         float64 `json:"latitude"`
 	Lon         float64 `json:"longitude"`
 	Distance    float64 `json:"distance"`
-	Stocked     int     `json:"pieces"`
-	Delivered   int
+	Stocked     int     `json:"stocked"`
+	Delivered   int     `json:"delivered"`
 }
 
 func (fly *Flyer) geoJson() (string, error) {
@@ -82,7 +83,27 @@ func (fly *Flyer) Set() error {
 	return nil
 }
 
-func ScanValidFlyers(currentTime int64) ([]interface{}, error) {
+func (fly *Flyer) Jset(path string, value interface{}) error {
+	// Connect Tile38
+	c, err := db_connect()
+	if err != nil {
+		log.Fatalf("Connect tile38-server\n")
+		return err
+	}
+	defer c.Close()
+
+	//fmt.Printf("GeoJSON:%v\n", json)
+	err = db_jset(c, "flyer", fmt.Sprintf("%v", fly.ID), path, value)
+	if err != nil {
+		log.Fatalf("JSET DB error: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
+//func ScanValidFlyers(currentTime int64) ([]interface{}, error) {
+func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
@@ -92,23 +113,39 @@ func ScanValidFlyers(currentTime int64) ([]interface{}, error) {
 	defer c.Close()
 
 	time := fmt.Sprintf("%v", currentTime)
-	ret, err := db_scan(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
+	//ret, err := db_scan(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
+	ret, err := db_scan_feature(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
 	if err != nil {
 		log.Fatalf("DB Scan error: %v\n", err)
 		return nil, err
 	}
 	//fmt.Printf("%s\n", ret)
 
-	return ret, nil
-	// NG ! GeoJSON != Json of Flyer
-	/*j
 	flyers := make([]Flyer, len(ret))
-	for i, f := range ret {
-		fmt.Printf("f=%#v\n", f)
-		flyers[i] = f.(Flyer)
+	for i, feature := range ret {
+		//fmt.Printf("feature:%#v\n", feature)
+
+		pj, err := json.Marshal(feature.Properties)
+		if err != nil {
+			log.Fatalf("Marshal feature error: %v\n", err)
+			return nil, err
+		}
+		//fmt.Printf("property json:%s\n", pj)
+
+		var f Flyer
+		err = json.Unmarshal(pj, &f)
+		if err != nil {
+			log.Fatalf("Unmarshal feature error: %v\n", err)
+			return nil, err
+		}
+		f.Lat = feature.Geometry.Coordinates[1]
+		f.Lon = feature.Geometry.Coordinates[0]
+		//fmt.Printf("peoperty :%#v\n", f)
+
+		flyers[i] = f
 	}
+
 	return flyers, nil
-	*/
 }
 
 func FlyerWithinBounds(s, w, n, e float64) ([]interface{}, error) {

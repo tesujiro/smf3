@@ -5,9 +5,8 @@ scan()
         local ID=$1
 
         tile38-cli<<EOF
-SCAN notification
+SCAN flyer
 EOF
-#SCAN flyer
 }
 
 while :
