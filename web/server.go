@@ -31,8 +31,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// DELETE FLYER DATA
+	// DELETE DATA
 	db.DropFlyer()
+	db.DropNotification()
 
 	// START MATCHING ENGINE
 	matcher := match.NewMatcher(ctx)
@@ -146,6 +147,9 @@ func (s *server) handleLocation() http.HandlerFunc {
 			}
 		}
 
+		// ----------------------------------------------------------------------------------------
+		// MAKE REAPONSE DATA
+		// 1. locations
 		var locations []interface{}
 		var locationJson []byte
 		locations, err = db.LocationWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
@@ -160,6 +164,7 @@ func (s *server) handleLocation() http.HandlerFunc {
 		}
 		//fmt.Fprintf(w, "%s", locationJson)
 
+		// 2. flyers
 		var flyers []interface{}
 		var flyerJson []byte
 		flyers, err = db.FlyerWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
@@ -174,7 +179,23 @@ func (s *server) handleLocation() http.HandlerFunc {
 		}
 		//fmt.Fprintf(w, "%s", flyerJson)
 
-		fmt.Fprintf(w, `{"locations": %s,"flyers": %s}`, locationJson, flyerJson)
+		// 2. notifications
+		var notifications []interface{}
+		var notificationJson []byte
+		notifications, err = db.NotificationWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+		if err != nil {
+			log.Printf("WithiLocation error: %v\n", err)
+			return
+		}
+		notificationJson, err = json.Marshal(notifications)
+		if err != nil {
+			log.Printf("Notification Marshal error: %v\n", err)
+			return
+		}
+		//fmt.Fprintf(w, "%s", notificationJson)
+
+		// write json data
+		fmt.Fprintf(w, `{"locations": %s,"flyers": %s, "notifications": %s}`, locationJson, flyerJson, notificationJson)
 	}
 }
 

@@ -28,8 +28,8 @@ func (n *Notification) geoJson() (string, error) {
 	},
 	"properties": {
 		"id":      {{.ID}},
-		"flyerID": {{.FlyerID}},
-		"UserID":  {{.UserID}},
+		"flyerId": {{.FlyerID}},
+		"userId":  {{.UserID}},
 		"deliveryTime": {{.DeliveryTime}}
 	}
 }`

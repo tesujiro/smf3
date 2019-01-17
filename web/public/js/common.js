@@ -3,6 +3,7 @@ const centerLatitude=35.6581;
 const centerLongitude=139.6975;
 var shapes;
 var flyerIDs;
+var notifIDs;
 
 var addShape = function(shape){
   shape.setMap(map);
@@ -106,12 +107,14 @@ geoInfo.prototype = {
     let response = JSON.parse(responseJson);
     let locations = response.locations;
     let flyers = response.flyers;
+    let notifs = response.notifications;
+    var userLocs = {};
     //console.log("FLYERS COUNT:"+flyers.length);
-    //
+
     for(i=0;i<locations.length;i++){
       let loc=locations[i]
       //console.log(loc);
-      var circle = new google.maps.Circle({
+      let circle = new google.maps.Circle({
         strokeColor: '#000000',
         strokeOpacity: 1.0,
         strokeWeight: 1,
@@ -121,19 +124,8 @@ geoInfo.prototype = {
         center: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
         radius: 2,
       });
+      userLocs[loc.properties.id]={lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]};
       addShape(circle);
-
-      /*
-      var marker = new google.maps.Marker({
-        position: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
-        flat: true,
-        title: "marker title!!",
-        cursor: "marker cursor!?",
-        label: String(5),
-        //icon: google.maps.SymbolPath.CIRCLE, // error
-      });
-      addShape(marker);
-      */
     }
 
     //
@@ -165,6 +157,36 @@ geoInfo.prototype = {
         }, (flyer.properties.endAt - now)*1000);
       }
     }
+
+    var userIDsToNotif={}
+    for(i=0;i<notifs.length;i++){
+      notif=notifs[i];
+      if ( !notifIDs[notif.properties.id] ){
+        //console.log(notif);
+        console.log("New notification ID:"+notif.properties.id+" UserID:"+notif.properties.userId);
+        notifIDs[notif.properties.id]=true;
+        if (! userIDsToNotif[notif.properties.userId]) {
+          userIDsToNotif[notif.properties.userId]=[notif.properties.id];
+        } else {
+          userIDsToNotif[notif.properties.userId].push(notif.properties.id);
+        }
+      }
+    }
+
+    for(userId in userIDsToNotif){
+      let marker = new google.maps.Marker({
+        position: {lat: userLocs[userId].lat, lng: userLocs[userId].lng},
+        flat: true,
+        title: "marker title!!",
+        cursor: "marker cursor!?",
+        label: String(userIDsToNotif[userId].length),
+        //icon: google.maps.SymbolPath.CIRCLE, // error
+      });
+      marker.setMap(map);
+      setTimeout(function(){
+        marker.setMap(null) // Remove Marker
+      }, 3*1000);
+    }
   },
   post          : function() {
     this.setBounds(map.getBounds());
@@ -179,6 +201,7 @@ var initMap = function() {
   var info = new geoInfo();
   shapes=[]
   flyerIDs={}
+  notifIDs={}
   console.log('Lat=' + centerLatitude + ' Lng=' + centerLongitude);
   drawMap(centerLatitude,centerLongitude);
 
@@ -192,7 +215,7 @@ var initMap = function() {
     console.log("title="+title)
     console.log("distance="+distance)
     info.pushFlyer(1 ,validPeriod , lat, lng, title, distance);
-    var circle = new google.maps.Circle({
+    let circle = new google.maps.Circle({
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,
       strokeWeight: 1,
