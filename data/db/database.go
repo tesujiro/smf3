@@ -7,6 +7,8 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+const MAX_NUMBER = 100000000
+
 type GeoJsonFeature struct {
 	Type       string                 `json:"type,omitempty"`
 	Geometry   *Geometry              `json:"geometry,omitempty"`
@@ -80,16 +82,17 @@ func db_retrieve(c redis.Conn, command, key string, args ...interface{}) ([]inte
 }
 
 func db_scan(c redis.Conn, key string, args ...interface{}) ([]interface{}, error) {
-	return db_retrieve(c, "SCAN", key, args...)
+	func_args := append([]interface{}{"LIMIT", MAX_NUMBER}, args...)
+	return db_retrieve(c, "SCAN", key, func_args...)
 }
 
 func db_withinBounds(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) ([]interface{}, error) {
-	func_args := append([]interface{}{"BOUNDS", s, w, n, e}, args...)
+	func_args := append([]interface{}{"LIMIT", MAX_NUMBER, "BOUNDS", s, w, n, e}, args...)
 	return db_retrieve(c, "WITHIN", key, func_args...)
 }
 
 func db_withinCircle(c redis.Conn, key string, lat, lon, meters float64, args ...interface{}) ([]interface{}, error) {
-	func_args := append([]interface{}{"CIRCLE", lat, lon, meters}, args...)
+	func_args := append([]interface{}{"LIMIT", MAX_NUMBER, "CIRCLE", lat, lon, meters}, args...)
 	//fmt.Printf("db_withinCircle: func_args(%#v)\n", func_args)
 	return db_retrieve(c, "WITHIN", key, func_args...)
 }
