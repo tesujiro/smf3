@@ -16,7 +16,7 @@ var pool *redis.Pool
 func init() {
 	fmt.Printf("Create Pool\n")
 	pool = &redis.Pool{
-		MaxIdle:     3,
+		MaxIdle:     256,
 		MaxActive:   0,
 		IdleTimeout: 60 * time.Second,
 		Dial:        db_connect,
