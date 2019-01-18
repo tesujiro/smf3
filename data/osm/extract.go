@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -16,17 +17,15 @@ const (
 	// Shibuya MarkCity
 	lat_center = 35.6581
 	lon_center = 139.6975
-	//lat_width  = 0.0011
-	lat_width = 0.0022
+	lat_width  = 0.0011
+	//lat_width = 0.0044
 	//lat_width = 0.011
-	//lon_width = 0.0015
-	lon_width = 0.0030
+	lon_width = 0.0015
+	//lon_width = 0.0060
 	//lon_width = 0.015
-	lat_min = lat_center - lat_width
-	lat_max = lat_center + lat_width
-	lon_min = lon_center - lon_width
-	lon_max = lon_center + lon_width
 )
+
+var scale float64
 
 //const filepath = "/Users/tesujiro/Downloads/JP"
 const filepath = "/Users/tesujiro/Downloads/kanto-latest.osm.pbf"
@@ -37,6 +36,10 @@ type location struct {
 }
 
 func inArea(lat, lon float64) bool {
+	lat_min := lat_center - lat_width*scale
+	lat_max := lat_center + lat_width*scale
+	lon_min := lon_center - lon_width*scale
+	lon_max := lon_center + lon_width*scale
 	return (lat_min <= lat && lat <= lat_max) &&
 		(lon_min <= lon && lon <= lon_max)
 }
@@ -194,6 +197,8 @@ func clientInfo(node_map map[int64]*osmpbf.Node, ways []*osmpbf.Way) interface{}
 }
 
 func main() {
+	flag.Float64Var(&scale, "s", 1, "scale factor")
+	flag.Parse()
 
 	nodes := getNodes()
 	fmt.Printf("Nodes: %v\n", len(nodes))
