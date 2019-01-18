@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"log"
+	"time"
 )
 
 type Notification struct {
@@ -84,7 +85,7 @@ func (n *Notification) Set() error {
 		return err
 	} else {
 		//fmt.Printf("GeoJSON:%v\n", json)
-		err = db_set_json(c, "notification", fmt.Sprintf("%v", n.ID), json, "NX") // NX: IF NOT EXISTS
+		err = db_set_json(c, "notification", fmt.Sprintf("%v", n.ID), json, "FIELD", "time", n.DeliveryTime, "NX") // NX: IF NOT EXISTS
 		if err != nil {
 			log.Fatalf("SET DB error: %v\n", err)
 			return err
@@ -103,7 +104,10 @@ func NotificationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	}
 	defer c.Close()
 
-	ret, err := db_withinBounds(c, "notification", s, w, n, e)
+	currentTime := time.Now().Unix()
+	now := fmt.Sprintf("%v", currentTime)
+	before60Sec := fmt.Sprintf("%v", currentTime-60)
+	ret, err := db_withinBounds(c, "notification", s, w, n, e, "WHERE", "time", before60Sec, now)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

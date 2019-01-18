@@ -87,7 +87,9 @@ func db_scan(c redis.Conn, key string, args ...interface{}) ([]interface{}, erro
 }
 
 func db_withinBounds(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) ([]interface{}, error) {
-	func_args := append([]interface{}{"LIMIT", MAX_NUMBER, "BOUNDS", s, w, n, e}, args...)
+	func_args := append([]interface{}{"LIMIT", MAX_NUMBER}, args...)
+	func_args = append(func_args, []interface{}{"BOUNDS", s, w, n, e}...)
+	//fmt.Printf("db_withinBounds: func_args(%#v)\n", func_args)
 	return db_retrieve(c, "WITHIN", key, func_args...)
 }
 
