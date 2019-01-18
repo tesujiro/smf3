@@ -61,11 +61,7 @@ func (fly *Flyer) geoJson() (string, error) {
 
 func (fly *Flyer) Set() error {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	if json, err := fly.geoJson(); err != nil {
@@ -85,15 +81,11 @@ func (fly *Flyer) Set() error {
 
 func (fly *Flyer) Jset(path string, value interface{}) error {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	//fmt.Printf("GeoJSON:%v\n", json)
-	err = db_jset(c, "flyer", fmt.Sprintf("%v", fly.ID), path, value)
+	err := db_jset(c, "flyer", fmt.Sprintf("%v", fly.ID), path, value)
 	if err != nil {
 		log.Fatalf("JSET DB error: %v\n", err)
 		return err
@@ -105,11 +97,7 @@ func (fly *Flyer) Jset(path string, value interface{}) error {
 //func ScanValidFlyers(currentTime int64) ([]interface{}, error) {
 func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return nil, err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	time := fmt.Sprintf("%v", currentTime)
@@ -150,11 +138,7 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 
 func FlyerWithinBounds(s, w, n, e float64, args ...interface{}) ([]interface{}, error) {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return nil, err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	ret, err := db_withinBounds(c, "flyer", s, w, n, e, args...)
@@ -169,14 +153,10 @@ func FlyerWithinBounds(s, w, n, e float64, args ...interface{}) ([]interface{}, 
 
 func DropFlyer() error {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return err
-	}
+	c := pool.Get()
 	defer c.Close()
 
-	err = db_drop(c, "flyer")
+	err := db_drop(c, "flyer")
 	if err != nil {
 		log.Fatalf("DB DROP error: %v\n", err)
 		return err

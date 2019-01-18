@@ -46,11 +46,7 @@ func (n *Notification) geoJson() (string, error) {
 
 func GetNotification(id string) (*Notification, error) {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return nil, err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	b, err := db_get(c, "notification", id)
@@ -73,11 +69,7 @@ func GetNotification(id string) (*Notification, error) {
 }
 func (n *Notification) Set() error {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	if json, err := n.geoJson(); err != nil {
@@ -97,11 +89,7 @@ func (n *Notification) Set() error {
 
 func NotificationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return nil, err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	currentTime := time.Now().Unix()
@@ -119,14 +107,10 @@ func NotificationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 
 func DropNotification() error {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return err
-	}
+	c := pool.Get()
 	defer c.Close()
 
-	err = db_drop(c, "notification")
+	err := db_drop(c, "notification")
 	if err != nil {
 		log.Fatalf("DB DROP error: %v\n", err)
 		return err

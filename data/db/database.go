@@ -2,12 +2,27 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/garyburd/redigo/redis"
 )
 
 const MAX_NUMBER = 100000000
+
+var pool *redis.Pool
+
+func init() {
+	fmt.Printf("Create Pool\n")
+	pool = &redis.Pool{
+		MaxIdle:     3,
+		MaxActive:   0,
+		IdleTimeout: 60 * time.Second,
+		Dial:        db_connect,
+		//Wait:        true,
+	}
+}
 
 type GeoJsonFeature struct {
 	Type       string                 `json:"type,omitempty"`

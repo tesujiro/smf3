@@ -46,11 +46,14 @@ func (loc *Location) geoJson() (string, error) {
 
 func (loc *Location) Set() error {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return err
-	}
+	/*
+		c, err := db_connect()
+		if err != nil {
+			log.Fatalf("Connect tile38-server\n")
+			return err
+		}
+	*/
+	c := pool.Get()
 	defer c.Close()
 
 	if json, err := loc.geoJson(); err != nil {
@@ -70,11 +73,7 @@ func (loc *Location) Set() error {
 
 func LocationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return nil, err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	ret, err := db_withinBounds(c, "location", s, w, n, e)
@@ -89,11 +88,7 @@ func LocationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 
 func LocationWithinCircle(lat, lon, meter float64, args ...interface{}) ([]interface{}, error) {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return nil, err
-	}
+	c := pool.Get()
 	defer c.Close()
 
 	ret, err := db_withinCircle(c, "location", lat, lon, meter, args...)
@@ -108,14 +103,10 @@ func LocationWithinCircle(lat, lon, meter float64, args ...interface{}) ([]inter
 
 func DropLocation() error {
 	// Connect Tile38
-	c, err := db_connect()
-	if err != nil {
-		log.Fatalf("Connect tile38-server\n")
-		return err
-	}
+	c := pool.Get()
 	defer c.Close()
 
-	err = db_drop(c, "location")
+	err := db_drop(c, "location")
 	if err != nil {
 		log.Fatalf("DB DROP error: %v\n", err)
 		return err
