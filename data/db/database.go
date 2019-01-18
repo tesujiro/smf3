@@ -102,6 +102,7 @@ func db_withinCircle(c redis.Conn, key string, lat, lon, meters float64, args ..
 // TODO:temporary name
 func db_retrieve_feature(c redis.Conn, command, key string, args ...interface{}) ([]GeoJsonFeature, error) {
 	func_args := append([]interface{}{key}, args...)
+	//fmt.Printf("db_retrieve_feature: func_args(%#v)\n", func_args)
 	ret, err := c.Do(command, func_args...)
 	if err != nil {
 		return nil, err

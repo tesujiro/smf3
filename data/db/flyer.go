@@ -148,7 +148,7 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	return flyers, nil
 }
 
-func FlyerWithinBounds(s, w, n, e float64) ([]interface{}, error) {
+func FlyerWithinBounds(s, w, n, e float64, args ...interface{}) ([]interface{}, error) {
 	// Connect Tile38
 	c, err := db_connect()
 	if err != nil {
@@ -157,7 +157,7 @@ func FlyerWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	}
 	defer c.Close()
 
-	ret, err := db_withinBounds(c, "flyer", s, w, n, e)
+	ret, err := db_withinBounds(c, "flyer", s, w, n, e, args...)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

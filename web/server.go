@@ -132,6 +132,7 @@ func (s *server) handleLocation() http.HandlerFunc {
 			log.Printf("Request body marshaling  error: %v\n", err)
 			return
 		}
+		fmt.Printf("request: {bounds: %v,flyers: %v}\n", len(reqInfo.Bounds), len(reqInfo.Flyers))
 
 		bounds := reqInfo.Bounds
 		//fmt.Printf("request.bounds=%v\n", bounds)
@@ -167,7 +168,8 @@ func (s *server) handleLocation() http.HandlerFunc {
 		// 2. flyers
 		var flyers []interface{}
 		var flyerJson []byte
-		flyers, err = db.FlyerWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+		now := time.Now().Unix()
+		flyers, err = db.FlyerWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"], "WHERE", "start", "-inf", now, "WHERE", "end", now, "+inf")
 		if err != nil {
 			log.Printf("WithiLocation error: %v\n", err)
 			return
@@ -195,6 +197,7 @@ func (s *server) handleLocation() http.HandlerFunc {
 		//fmt.Fprintf(w, "%s", notificationJson)
 
 		// write json data
+		fmt.Printf("response: {locations: %v,flyers: %v, notifications: %v}\n", len(locations), len(flyers), len(notifications))
 		fmt.Fprintf(w, `{"locations": %s,"flyers": %s, "notifications": %s}`, locationJson, flyerJson, notificationJson)
 	}
 }
