@@ -111,6 +111,7 @@ geoInfo.prototype = {
     let notifs = response.notifications;
     var userLocs = {};
     //console.log("FLYERS COUNT:"+flyers.length);
+    console.log("locations:"+locations.length+" flyers:"+flyers.length+" notifs:"+notifs.length);
 
     for(i=0;i<locations.length;i++){
       let loc=locations[i]
@@ -162,7 +163,10 @@ geoInfo.prototype = {
     var userIDsToNotif={}
     for(i=0;i<notifs.length;i++){
       notif=notifs[i];
-      if ( !notifIDs[notif.properties.id] ){
+      if ( !notifIDs[notif.properties.id] && !userLocs[notif.properties.userId]){
+        //console.log("No userLocs userId:"+notif.properties.userId);
+      }
+      if ( !notifIDs[notif.properties.id] && userLocs[notif.properties.userId]){
         //console.log(notif);
         console.log("New notification ID:"+notif.properties.id+" UserID:"+notif.properties.userId);
         notifIDs[notif.properties.id]=true;
