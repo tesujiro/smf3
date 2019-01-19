@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/json"
-	"fmt"
 	"testing"
 )
 
@@ -46,7 +45,7 @@ func TestSetJson(t *testing.T) {
 			t.Fatalf("JSON Marshal error: %v", err)
 		}
 		json := string(b)
-		fmt.Printf("json:%v\n", json)
+		//fmt.Printf("json:%v\n", json)
 		if err := db_set_json(c, test.key, test.id, json, test.args...); err != nil {
 			t.Fatalf("SET DB error: %v", err)
 		}
@@ -55,6 +54,9 @@ func TestSetJson(t *testing.T) {
 		} else if string(b) != json {
 			t.Errorf("Case:[%v] received: %v - expected: %v", i, string(b), json)
 		}
-		defer db_del(c, test.key, test.id)
+		//defer db_del(c, test.key, test.id)
+		if err := db_del(c, test.key, test.id); err != nil {
+			t.Fatalf("DELETE DB error: %v\n", err)
+		}
 	}
 }
