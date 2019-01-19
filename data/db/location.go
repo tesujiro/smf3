@@ -71,12 +71,12 @@ func (loc *Location) Set() error {
 	return nil
 }
 
-func LocationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
+func LocationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
 
-	ret, err := db_withinBounds(c, "location", s, w, n, e)
+	ret, err := db_withinBounds_feature(c, "location", s, w, n, e)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err
@@ -86,12 +86,12 @@ func LocationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	return ret, nil
 }
 
-func LocationWithinCircle(lat, lon, meter float64, args ...interface{}) ([]interface{}, error) {
+func LocationWithinCircle(lat, lon, meter float64, args ...interface{}) ([]GeoJsonFeature, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
 
-	ret, err := db_withinCircle(c, "location", lat, lon, meter, args...)
+	ret, err := db_withinCircle_feature(c, "location", lat, lon, meter, args...)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

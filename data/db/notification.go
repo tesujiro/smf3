@@ -87,7 +87,7 @@ func (n *Notification) Set() error {
 	return nil
 }
 
-func NotificationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
+func NotificationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
@@ -95,7 +95,7 @@ func NotificationWithinBounds(s, w, n, e float64) ([]interface{}, error) {
 	currentTime := time.Now().Unix()
 	now := fmt.Sprintf("%v", currentTime)
 	before60Sec := fmt.Sprintf("%v", currentTime-60)
-	ret, err := db_withinBounds(c, "notification", s, w, n, e, "WHERE", "time", before60Sec, now)
+	ret, err := db_withinBounds_feature(c, "notification", s, w, n, e, "WHERE", "time", before60Sec, now)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

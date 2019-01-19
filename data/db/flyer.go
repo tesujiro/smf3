@@ -94,14 +94,12 @@ func (fly *Flyer) Jset(path string, value interface{}) error {
 	return nil
 }
 
-//func ScanValidFlyers(currentTime int64) ([]interface{}, error) {
 func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
 
 	time := fmt.Sprintf("%v", currentTime)
-	//ret, err := db_scan(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
 	ret, err := db_scan_feature(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
 	if err != nil {
 		log.Fatalf("DB Scan error: %v\n", err)
@@ -136,12 +134,12 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	return flyers, nil
 }
 
-func FlyerWithinBounds(s, w, n, e float64, args ...interface{}) ([]interface{}, error) {
+func FlyerWithinBounds(s, w, n, e float64, args ...interface{}) ([]GeoJsonFeature, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
 
-	ret, err := db_withinBounds(c, "flyer", s, w, n, e, args...)
+	ret, err := db_withinBounds_feature(c, "flyer", s, w, n, e, args...)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

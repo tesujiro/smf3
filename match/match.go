@@ -100,9 +100,9 @@ func (m *Matcher) match() error {
 		}
 		for _, loc := range locations {
 			//fmt.Printf("location:%#v\n", loc)
-			lat := loc.(map[string]interface{})["geometry"].(map[string]interface{})["coordinates"].([]interface{})[1].(float64)
-			lon := loc.(map[string]interface{})["geometry"].(map[string]interface{})["coordinates"].([]interface{})[0].(float64)
-			userID := loc.(map[string]interface{})["properties"].(map[string]interface{})["id"].(float64) //TODO
+			lat := loc.Geometry.Coordinates[1]
+			lon := loc.Geometry.Coordinates[0]
+			userID := loc.Properties["id"].(float64)
 			//fmt.Printf("location:{userID:%v,lat:%v,lon:%v}\n", userID, lat, lon)
 			now := time.Now().Unix()
 			n := &db.Notification{
