@@ -17,7 +17,7 @@ func init() {
 	fmt.Printf("Create Pool\n")
 	pool = &redis.Pool{
 		MaxIdle:     1024,
-		MaxActive:   0,
+		MaxActive:   1024,
 		IdleTimeout: 60 * time.Second,
 		Dial:        db_connect,
 		//Wait:        true,
@@ -49,6 +49,7 @@ func db_set_json(c redis.Conn, key, id, json string, args ...interface{}) error 
 	// see Conn.Do function func signature
 	func_args := append([]interface{}{key, id}, args...)
 	func_args = append(func_args, []interface{}{"OBJECT", json}...)
+	//fmt.Printf("db_retrieve: func_args(%#v)\n", func_args)
 	_, err := c.Do("SET", func_args...)
 	//fmt.Printf("%s\n", ret)
 	return err
@@ -72,6 +73,14 @@ func db_get(c redis.Conn, key, id string) ([]byte, error) {
 	} else {
 		return b, err
 	}
+}
+
+func db_del(c redis.Conn, key, id string) error {
+	_, err := c.Do("DEL", key, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func db_retrieve(c redis.Conn, command, key string, args ...interface{}) ([]GeoJsonFeature, error) {
