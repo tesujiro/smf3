@@ -1,13 +1,9 @@
 package db
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"log"
-	"strings"
-	"time"
 )
 
 type Flyer struct {
@@ -25,38 +21,31 @@ type Flyer struct {
 }
 
 func (fly *Flyer) geoJson() (string, error) {
-	json_template := `{
-	"type": "Feature",
-	"geometry": {
-		"type": "Point",
-		"coordinates": [
-			{{.Lon}},
-			{{.Lat}}
-		]
-	},
-	"properties": {
-		"id":         {{.ID}},
-		"ownerId":    {{.OwnerID}},
-		"title":     "{{.Title}}",
-		"validPeriod": {{.ValidPeriod}},
-		"startAt":    {{.StartAt}},
-		"endAt":      {{.EndAt}},
-		"distance":   {{.Distance}},
-		"stocked":    {{.Stocked}},
-		"delivered":  {{.Delivered}}
+	feature := &GeoJsonFeature{
+		Type: "Feature",
+		Geometry: &Geometry{
+			Type:        "Point",
+			Coordinates: [2]float64{fly.Lon, fly.Lat},
+		},
+		Properties: map[string]interface{}{
+			"id":          fly.ID,
+			"ownerId":     fly.OwnerID,
+			"title":       fly.Title,
+			"validPeriod": fly.ValidPeriod,
+			"startAt":     fly.StartAt,
+			"endAt":       fly.EndAt,
+			"distance":    fly.Distance,
+			"stocked":     fly.Stocked,
+			"delivered":   fly.Delivered,
+		},
 	}
-}`
-	t := template.Must(template.New("flyer").Parse(json_template))
-	t.Funcs(template.FuncMap{
-		"now":     func() string { return time.Now().String() },
-		"toupper": strings.ToUpper,
-	})
 
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, fly); err != nil {
+	json, err := json.Marshal(feature)
+	if err != nil {
+		log.Printf("Notification feature marshal error: %v\n", err)
 		return "", err
 	}
-	return tpl.String(), nil
+	return string(json), nil
 }
 
 func (fly *Flyer) Set() error {

@@ -1,10 +1,8 @@
 package db
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"log"
 	"time"
 )
@@ -19,29 +17,26 @@ type Notification struct {
 }
 
 func (n *Notification) geoJson() (string, error) {
-	json_template := `{
-	"type": "Feature",
-	"geometry": {
-		"type": "Point",
-		"coordinates": [
-			{{.Lon}},
-			{{.Lat}}
-		]
-	},
-	"properties": {
-		"id":      {{.ID}},
-		"flyerId": {{.FlyerID}},
-		"userId":  {{.UserID}},
-		"deliveryTime": {{.DeliveryTime}}
+	feature := &GeoJsonFeature{
+		Type: "Feature",
+		Geometry: &Geometry{
+			Type:        "Point",
+			Coordinates: [2]float64{n.Lon, n.Lat},
+		},
+		Properties: map[string]interface{}{
+			"id":           n.ID,
+			"flyerId":      n.FlyerID,
+			"userId":       n.UserID,
+			"deliveryTime": n.DeliveryTime,
+		},
 	}
-}`
-	t := template.Must(template.New("notification").Parse(json_template))
 
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, n); err != nil {
+	json, err := json.Marshal(feature)
+	if err != nil {
+		log.Printf("Notification feature marshal error: %v\n", err)
 		return "", err
 	}
-	return tpl.String(), nil
+	return string(json), nil
 }
 
 func GetNotification(id string) (*Notification, error) {
