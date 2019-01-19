@@ -100,7 +100,7 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	defer c.Close()
 
 	time := fmt.Sprintf("%v", currentTime)
-	ret, err := db_scan_feature(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
+	ret, err := db_scan(c, "flyer", "WHERE", "start", "-inf", time, "WHERE", "end", time, "+inf")
 	if err != nil {
 		log.Fatalf("DB Scan error: %v\n", err)
 		return nil, err
@@ -139,7 +139,7 @@ func FlyerWithinBounds(s, w, n, e float64, args ...interface{}) ([]GeoJsonFeatur
 	c := pool.Get()
 	defer c.Close()
 
-	ret, err := db_withinBounds_feature(c, "flyer", s, w, n, e, args...)
+	ret, err := db_withinBounds(c, "flyer", s, w, n, e, args...)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

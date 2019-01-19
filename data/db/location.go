@@ -76,7 +76,7 @@ func LocationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 	c := pool.Get()
 	defer c.Close()
 
-	ret, err := db_withinBounds_feature(c, "location", s, w, n, e)
+	ret, err := db_withinBounds(c, "location", s, w, n, e)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err
@@ -91,7 +91,7 @@ func LocationWithinCircle(lat, lon, meter float64, args ...interface{}) ([]GeoJs
 	c := pool.Get()
 	defer c.Close()
 
-	ret, err := db_withinCircle_feature(c, "location", lat, lon, meter, args...)
+	ret, err := db_withinCircle(c, "location", lat, lon, meter, args...)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err

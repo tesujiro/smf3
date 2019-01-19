@@ -74,122 +74,45 @@ func db_get(c redis.Conn, key, id string) ([]byte, error) {
 	}
 }
 
-/*j
-func db_retrieve(c redis.Conn, command, key string, args ...interface{}) ([]interface{}, error) {
+func db_retrieve(c redis.Conn, command, key string, args ...interface{}) ([]GeoJsonFeature, error) {
 	func_args := append([]interface{}{key}, args...)
+	//fmt.Printf("db_retrieve: func_args(%#v)\n", func_args)
 	ret, err := c.Do(command, func_args...)
 	if err != nil {
 		return nil, err
 	}
-
-	records := ret.([]interface{})[1].([]interface{})
-	jsonArray := make([]interface{}, len(records))
-	for i, b := range records {
-		jsonByteArray := b.([]interface{})[1].([]byte)
-		var loc interface{}
-		err := json.Unmarshal(jsonByteArray, &loc)
-		if err != nil {
-			return nil, err
-		}
-		jsonArray[i] = loc
-	}
-
-	return jsonArray, err
-}
-*/
-
-/*j
-func db_scan(c redis.Conn, key string, args ...interface{}) ([]interface{}, error) {
-	func_args := append([]interface{}{"LIMIT", MAX_NUMBER}, args...)
-	return db_retrieve(c, "SCAN", key, func_args...)
-}
-*/
-
-/*j
-func db_withinBounds(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) ([]interface{}, error) {
-	func_args := append([]interface{}{"LIMIT", MAX_NUMBER}, args...)
-	func_args = append(func_args, []interface{}{"BOUNDS", s, w, n, e}...)
-	//fmt.Printf("db_withinBounds: func_args(%#v)\n", func_args)
-	return db_retrieve(c, "WITHIN", key, func_args...)
-}
-*/
-
-/*
-func db_withinCircle(c redis.Conn, key string, lat, lon, meters float64, args ...interface{}) ([]interface{}, error) {
-	func_args := append([]interface{}{"LIMIT", MAX_NUMBER, "CIRCLE", lat, lon, meters}, args...)
-	//fmt.Printf("db_withinCircle: func_args(%#v)\n", func_args)
-	return db_retrieve(c, "WITHIN", key, func_args...)
-}
-*/
-
-// TODO:temporary name
-func db_retrieve_feature(c redis.Conn, command, key string, args ...interface{}) ([]GeoJsonFeature, error) {
-	func_args := append([]interface{}{key}, args...)
-	//fmt.Printf("db_retrieve_feature: func_args(%#v)\n", func_args)
-	ret, err := c.Do(command, func_args...)
-	if err != nil {
-		return nil, err
-	}
-
-	/*
-		if len(ret.([]interface{})[1].([]interface{})) > 0 {
-			if value, ok := ret.([]interface{})[1].([]interface{})[0].([]interface{}); ok {
-				for k, v := range value {
-					fmt.Printf("ret[1][0][%v]:%#v\n", k, v)
-				}
-			}
-		}
-	*/
 
 	features := []GeoJsonFeature{}
 	if len(ret.([]interface{})[1].([]interface{})) > 0 {
 		features = make([]GeoJsonFeature, len(ret.([]interface{})[1].([]interface{})))
 		for i, value := range ret.([]interface{})[1].([]interface{}) {
 			b := value.([]interface{})[1].([]byte)
-			//var feature GeoJsonFeature
 			//fmt.Printf("b:%#v\n", string(b))
 			err = json.Unmarshal(b, &features[i])
 			if err != nil {
 				return nil, err
 			}
 		}
-
 	}
 
 	return features, nil
-	/*
-		records := ret.([]interface{})[1].([]interface{})
-		jsonArray := make([]interface{}, len(records))
-		for i, b := range records {
-			jsonByteArray := b.([]interface{})[1].([]byte)
-			var loc interface{}
-			err := json.Unmarshal(jsonByteArray, &loc)
-			if err != nil {
-				return nil, err
-			}
-			jsonArray[i] = loc
-		}
-
-		return jsonArray, err
-	*/
 }
 
-// TODO:temporary name
-func db_scan_feature(c redis.Conn, key string, args ...interface{}) ([]GeoJsonFeature, error) {
-	return db_retrieve_feature(c, "SCAN", key, args...)
+func db_scan(c redis.Conn, key string, args ...interface{}) ([]GeoJsonFeature, error) {
+	return db_retrieve(c, "SCAN", key, args...)
 }
 
-func db_withinBounds_feature(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) ([]GeoJsonFeature, error) {
+func db_withinBounds(c redis.Conn, key string, s, w, n, e float64, args ...interface{}) ([]GeoJsonFeature, error) {
 	func_args := append([]interface{}{"LIMIT", MAX_NUMBER}, args...)
 	func_args = append(func_args, []interface{}{"BOUNDS", s, w, n, e}...)
 	//fmt.Printf("db_withinBounds: func_args(%#v)\n", func_args)
-	return db_retrieve_feature(c, "WITHIN", key, func_args...)
+	return db_retrieve(c, "WITHIN", key, func_args...)
 }
 
-func db_withinCircle_feature(c redis.Conn, key string, lat, lon, meters float64, args ...interface{}) ([]GeoJsonFeature, error) {
+func db_withinCircle(c redis.Conn, key string, lat, lon, meters float64, args ...interface{}) ([]GeoJsonFeature, error) {
 	func_args := append([]interface{}{"LIMIT", MAX_NUMBER, "CIRCLE", lat, lon, meters}, args...)
 	//fmt.Printf("db_withinCircle: func_args(%#v)\n", func_args)
-	return db_retrieve_feature(c, "WITHIN", key, func_args...)
+	return db_retrieve(c, "WITHIN", key, func_args...)
 }
 
 func db_drop(c redis.Conn, key string) error {
