@@ -24,7 +24,7 @@ var drawMap = function(lat,lng){
     mapTypeControl: false,
     zoomControl: false,
     streetViewControl: false,
-    zoom: 17
+    zoom: 15
   });
   // Google Mapで情報ウインドウの表示、非表示の切り替え
   // https://hacknote.jp/archives/19977/

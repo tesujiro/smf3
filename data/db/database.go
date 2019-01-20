@@ -57,6 +57,7 @@ func db_set_json(c redis.Conn, key, id, json string, args ...interface{}) error 
 
 func db_jset(c redis.Conn, key, id, path string, value interface{}, args ...interface{}) error {
 	func_args := append([]interface{}{key, id, path, value}, args...)
+	//fmt.Printf("func_args(%#v)\n", func_args)
 	_, err := c.Do("JSET", func_args...)
 	//fmt.Printf("%s\n", ret)
 	return err
