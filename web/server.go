@@ -55,11 +55,13 @@ func (s *server) routes() {
 	s.router.HandleFunc("/greet", s.handleHello())
 	s.router.HandleFunc("/portal", s.portal())
 	s.router.HandleFunc("/location", s.handleLocation())
-	s.router.HandleFunc("/footway", s.handleFootway())
+	s.router.HandleFunc("/footway", s.handleFootway()) // TODO: /api/footways
 	s.router.HandleFunc("/api/locations", s.handleLocations())
 	//s.router.HandleFunc("/api/locations/", s.handleSingleLocation())
-	//s.router.HandleFunc("/api/flyers", s.handleFlyers())
+	s.router.HandleFunc("/api/flyers", s.handleFlyers())
 	//s.router.HandleFunc("/api/flyers/", s.handleSingleFlyer())
+	//s.router.HandleFunc("/api/notifications", s.handleNotifs())
+	//s.router.HandleFunc("/api/notifications/", s.handleSingleNotifs())
 	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 }
 
@@ -154,23 +156,8 @@ func (s *server) handleLocation() http.HandlerFunc {
 
 		// ----------------------------------------------------------------------------------------
 		// MAKE REAPONSE DATA
-		// 2. flyers
-		var flyers []db.GeoJsonFeature
-		var flyerJson []byte
-		now := time.Now().Unix()
-		flyers, err = db.FlyerWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"], "WHERE", "start", "-inf", now, "WHERE", "end", now, "+inf")
-		if err != nil {
-			log.Printf("WithiLocation error: %v\n", err)
-			return
-		}
-		flyerJson, err = json.Marshal(flyers)
-		if err != nil {
-			log.Printf("Flyer Marshal error: %v\n", err)
-			return
-		}
-		//fmt.Printf("flyerJson:%s\n", flyerJson)
 
-		// 2. notifications
+		// 3. notifications
 		var notifications []db.GeoJsonFeature
 		var notificationJson []byte
 		notifications, err = db.NotificationWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
@@ -186,11 +173,11 @@ func (s *server) handleLocation() http.HandlerFunc {
 		//fmt.Fprintf(w, "%s", notificationJson)
 
 		// write json data
-		fmt.Fprintf(w, `{"flyers": %s, "notifications": %s}`, flyerJson, notificationJson)
+		fmt.Fprintf(w, `{"notifications": %s}`, notificationJson)
 		//fmt.Fprintf(w, `{"locations": %s,"flyers": %s, "notifications": %s}`, locationJson, flyerJson, notificationJson)
 
 		fmt.Printf("request: {bounds: %v ,flyers: %v }\t", len(reqInfo.Bounds), len(reqInfo.Flyers))
 		//fmt.Printf("response: {locations: %v ,flyers: %v , notifications: %v }\n", len(locations), len(flyers), len(notifications))
-		fmt.Printf("response: {flyers: %v , notifications: %v }\n", len(flyers), len(notifications))
+		fmt.Printf("response: {notifications: %v }\n", len(notifications))
 	}
 }

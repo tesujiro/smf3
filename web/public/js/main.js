@@ -9,6 +9,8 @@ var notifIDsByUserID;
 var locInfo;
 var userLocs = {};
 
+var flyerInfo;
+
 var addShape = function(shape){
   shape.setMap(map);
   var now = Date.now()
@@ -109,42 +111,12 @@ geoInfo.prototype = {
   drawResponse: function(responseJson){
     //console.log(responseJson);
     let response = JSON.parse(responseJson);
-    let locations = response.locations;
-    let flyers = response.flyers;
+    //let locations = response.locations;
+    //let flyers = response.flyers;
     let notifs = response.notifications;
     //var userLocs = {};
     //console.log("FLYERS COUNT:"+flyers.length);
-    console.log("flyers:"+flyers.length+" notifs:"+notifs.length);
-
-    //
-    let now=Math.floor((new Date).getTime()/1000);
-    for(i=0;i<flyers.length;i++){
-      let flyer=flyers[i]
-      //console.log(flyer);
-      //console.log("now:"+now);
-      //console.log("start:"+flyer.properties.startAt)
-      //console.log("end:"+flyer.properties.endAt)
-      if ( !flyerIDs[flyer.properties.id] 
-        && flyer.properties.startAt <= now
-        && now <= flyer.properties.endAt
-      ){
-        //console.log("==>WRITE CIRCLE!")
-        flyerIDs[flyer.properties.id]=true;
-        let circle = new google.maps.Circle({
-          strokeColor: '#80FF00',
-          strokeOpacity: 0.6,
-          strokeWeight: 0.4,
-          fillColor: '#80FF00',
-          fillOpacity: 0.3,
-          center: {lat: flyer.geometry.coordinates[1], lng:flyer.geometry.coordinates[0]},
-          radius: flyer.properties.distance,
-        });
-        circle.setMap(map);
-        setTimeout(function(){
-          circle.setMap(null) // Remove Circle
-        }, (flyer.properties.endAt - now)*1000);
-      }
-    }
+    console.log("notifs:"+notifs.length);
 
     var userIDsToNotif={}
     for(i=0;i<notifs.length;i++){
@@ -230,4 +202,6 @@ var initMap = function() {
 var initHttp = function() {
   locInfo = new locationInfo();
   locInfo.startPost()
+  flyerInfo = new flyerInfo();
+  flyerInfo.startPost()
 }
