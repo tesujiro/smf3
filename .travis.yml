@@ -8,7 +8,7 @@ env:
 
 before_install:
  #- go get -u github.com/haya14busa/goverage
-  - docker run -p 9851:9851 tile38/tile38
+  - docker run -d -p 9851:9851 tile38/tile38
   - go get -u github.com/tesujiro/smf3
 
 script:
