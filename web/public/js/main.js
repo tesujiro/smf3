@@ -2,12 +2,9 @@ var map;
 const centerLatitude=35.6581;
 const centerLongitude=139.6975;
 var shapes;
-var notifIDs; // Already notified notification IDs
-var notifIDsByUserID;
-
 var locInfo;
-
-var flyerInfo;
+//var flyerInfo;
+//var notifInfo;
 
 var addShape = function(shape){
   shape.setMap(map);
@@ -82,7 +79,7 @@ geoInfo.prototype = {
     };
   },
   setBounds  : function(bounds){
-    this.request.bounds=bounds;
+    //this.request.bounds=bounds;
     //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
   },
   pushFlyer  : function(id,validPeriod,lat,lng,title,distance){
@@ -106,54 +103,7 @@ geoInfo.prototype = {
     this.stopPostTimer(); // avoid duplicate timer
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   },
-  drawResponse: function(responseJson){
-    //console.log(responseJson);
-    let response = JSON.parse(responseJson);
-    //let locations = response.locations;
-    //let flyers = response.flyers;
-    let notifs = response.notifications;
-    //console.log("FLYERS COUNT:"+flyers.length);
-    console.log("notifs:"+notifs.length);
-
-    var userIDsToNotif={}
-    for(i=0;i<notifs.length;i++){
-      notif=notifs[i];
-      if ( !notifIDs[notif.properties.id] && !locInfo.userLocs[notif.properties.userId]){
-        //console.log("No userLocs userId:"+notif.properties.userId);
-      }
-      if ( !notifIDs[notif.properties.id] && locInfo.userLocs[notif.properties.userId]){
-        //console.log(notif);
-        console.log("New notification ID:"+notif.properties.id+" UserID:"+notif.properties.userId);
-        notifIDs[notif.properties.id]=true;
-        if (! userIDsToNotif[notif.properties.userId]) {
-          userIDsToNotif[notif.properties.userId]=[notif.properties.id];
-        } else {
-          userIDsToNotif[notif.properties.userId].push(notif.properties.id);
-        }
-        if (! notifIDsByUserID[notif.properties.userId]) {
-          notifIDsByUserID[notif.properties.userId]=[notif.properties.id];
-        } else {
-          notifIDsByUserID[notif.properties.userId].push(notif.properties.id);
-        }
-      }
-    }
-
-    for(userId in userIDsToNotif){
-      let marker = new google.maps.Marker({
-        position: {lat: locInfo.userLocs[userId].lat, lng: locInfo.userLocs[userId].lng},
-        flat: true,
-        title: "marker title!!",
-        cursor: "marker cursor!?",
-        //label: String(userIDsToNotif[userId].length),
-        label: String(notifIDsByUserID[userId].length),
-        //icon: google.maps.SymbolPath.CIRCLE, // error
-      });
-      marker.setMap(map);
-      setTimeout(function(){
-        marker.setMap(null) // Remove Marker
-      }, 3*1000);
-    }
-  },
+  drawResponse: function(responseJson){ },
   post          : function() {
     this.setBounds(map.getBounds());
     doHttp('POST','/location',this.request,this.drawResponse);
@@ -165,8 +115,8 @@ geoInfo.prototype = {
 var initMap = function() {
   var info = new geoInfo();
   shapes=[];
-  notifIDs={};
-  notifIDsByUserID={};
+  //notifIDs={};
+  //notifIDsByUserID={};
   console.log('Lat=' + centerLatitude + ' Lng=' + centerLongitude);
   drawMap(centerLatitude,centerLongitude);
 
@@ -198,7 +148,10 @@ var initMap = function() {
 var initHttp = function() {
   locInfo = new locationInfo();
   locInfo.startPost()
-  fInfo = new flyerInfo();
-  console.log(fInfo)
-  fInfo.startPost()
+
+  flyerInfo = new flyerInfo();
+  flyerInfo.startPost()
+
+  notifInfo = new notifInfo();
+  notifInfo.startPost()
 }
