@@ -1,9 +1,11 @@
 function flyerInfo() {
   this.postTimer = 0;
   this.Interval = 1000; // 1 seconds
+  this.flyerIDs = {};
 };
 
 flyerInfo.prototype = {
+  //flyerIDs: {},
   stopPostTimer : function() {
     clearTimeout(this.postTimer);
     this.postTimer=0;
@@ -22,12 +24,13 @@ flyerInfo.prototype = {
       //console.log("now:"+now);
       //console.log("start:"+flyer.properties.startAt)
       //console.log("end:"+flyer.properties.endAt)
-      if ( !flyerIDs[flyer.properties.id] 
+      console.log("this.Interval:"+this.Interval);
+      if ( !this.flyerIDs[flyer.properties.id] 
         && flyer.properties.startAt <= now
         && now <= flyer.properties.endAt
       ){
         //console.log("==>WRITE CIRCLE!")
-        flyerIDs[flyer.properties.id]=true;
+        this.flyerIDs[flyer.properties.id]=true;
         let circle = new google.maps.Circle({
           strokeColor: '#80FF00',
           strokeOpacity: 0.6,
@@ -48,7 +51,7 @@ flyerInfo.prototype = {
     let bounds=map.getBounds();
     //console.log(bounds);
     let url='/api/flyers?south='+bounds.getSouthWest().lat()+'&west='+bounds.getSouthWest().lng()+'&north='+bounds.getNorthEast().lat()+'&east='+bounds.getNorthEast().lng()
-    doHttp('GET',url,this.request,this.drawResponse);
+    doHttp('GET',url,this.request,this.drawResponse.bind(this));
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
 }

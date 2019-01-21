@@ -2,12 +2,10 @@ var map;
 const centerLatitude=35.6581;
 const centerLongitude=139.6975;
 var shapes;
-var flyerIDs;
 var notifIDs; // Already notified notification IDs
 var notifIDsByUserID;
 
 var locInfo;
-var userLocs = {};
 
 var flyerInfo;
 
@@ -114,17 +112,16 @@ geoInfo.prototype = {
     //let locations = response.locations;
     //let flyers = response.flyers;
     let notifs = response.notifications;
-    //var userLocs = {};
     //console.log("FLYERS COUNT:"+flyers.length);
     console.log("notifs:"+notifs.length);
 
     var userIDsToNotif={}
     for(i=0;i<notifs.length;i++){
       notif=notifs[i];
-      if ( !notifIDs[notif.properties.id] && !userLocs[notif.properties.userId]){
+      if ( !notifIDs[notif.properties.id] && !locInfo.userLocs[notif.properties.userId]){
         //console.log("No userLocs userId:"+notif.properties.userId);
       }
-      if ( !notifIDs[notif.properties.id] && userLocs[notif.properties.userId]){
+      if ( !notifIDs[notif.properties.id] && locInfo.userLocs[notif.properties.userId]){
         //console.log(notif);
         console.log("New notification ID:"+notif.properties.id+" UserID:"+notif.properties.userId);
         notifIDs[notif.properties.id]=true;
@@ -143,7 +140,7 @@ geoInfo.prototype = {
 
     for(userId in userIDsToNotif){
       let marker = new google.maps.Marker({
-        position: {lat: userLocs[userId].lat, lng: userLocs[userId].lng},
+        position: {lat: locInfo.userLocs[userId].lat, lng: locInfo.userLocs[userId].lng},
         flat: true,
         title: "marker title!!",
         cursor: "marker cursor!?",
@@ -168,7 +165,6 @@ geoInfo.prototype = {
 var initMap = function() {
   var info = new geoInfo();
   shapes=[];
-  flyerIDs={};
   notifIDs={};
   notifIDsByUserID={};
   console.log('Lat=' + centerLatitude + ' Lng=' + centerLongitude);
@@ -202,6 +198,7 @@ var initMap = function() {
 var initHttp = function() {
   locInfo = new locationInfo();
   locInfo.startPost()
-  flyerInfo = new flyerInfo();
-  flyerInfo.startPost()
+  fInfo = new flyerInfo();
+  console.log(fInfo)
+  fInfo.startPost()
 }

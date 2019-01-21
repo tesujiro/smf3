@@ -1,6 +1,7 @@
 function locationInfo() {
   this.postTimer = 0;
   this.Interval = 1000; // 1 seconds
+  this.userLocs = {};
 };
 
 locationInfo.prototype = {
@@ -28,17 +29,17 @@ locationInfo.prototype = {
         center: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
         radius: 2,
       });
-      userLocs[loc.properties.id]={lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]};
+      this.userLocs[loc.properties.id]={lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]};
       addShape(circle);
     }
-    console.log("locations:"+locations.length+" userLocs:"+Object.keys(userLocs).length);
-    //console.log(userLocs);
+    console.log("locations:"+locations.length+" userLocs:"+Object.keys(this.userLocs).length);
+    //console.log(this.userLocs);
   },
   post          : function() {
     let bounds=map.getBounds();
     //console.log(bounds);
     let url='/api/locations?south='+bounds.getSouthWest().lat()+'&west='+bounds.getSouthWest().lng()+'&north='+bounds.getNorthEast().lat()+'&east='+bounds.getNorthEast().lng()
-    doHttp('GET',url,this.request,this.drawResponse);
+    doHttp('GET',url,this.request,this.drawResponse.bind(this));
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
 }
