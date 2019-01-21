@@ -6,6 +6,9 @@ var flyerIDs;
 var notifIDs; // Already notified notification IDs
 var notifIDsByUserID;
 
+var locInfo;
+var userLocs = {};
+
 var addShape = function(shape){
   shape.setMap(map);
   var now = Date.now()
@@ -41,8 +44,8 @@ var drawMap = function(lat,lng){
   }());
 }
 
-var doPost = function(url,requestInfo,handleFunc){
-  //console.log('doPost:'+requestInfo.length);
+var doHttp = function(method,url,requestInfo,handleFunc){
+  //console.log('doHttp:'+requestInfo.length);
   var req = new XMLHttpRequest();
   req.onreadystatechange = function() {
     if (req.readyState == 4) { // finished sending
@@ -55,7 +58,7 @@ var doPost = function(url,requestInfo,handleFunc){
       //console.log("通信中...");
     }
   }
-  req.open('POST', url, true);
+  req.open(method, url, true);
   req.setRequestHeader("Content-type", "application/json");
   var parameters = JSON.stringify(requestInfo);
   req.send(parameters);
@@ -109,26 +112,9 @@ geoInfo.prototype = {
     let locations = response.locations;
     let flyers = response.flyers;
     let notifs = response.notifications;
-    var userLocs = {};
+    //var userLocs = {};
     //console.log("FLYERS COUNT:"+flyers.length);
-    console.log("locations:"+locations.length+" flyers:"+flyers.length+" notifs:"+notifs.length);
-
-    for(i=0;i<locations.length;i++){
-      let loc=locations[i]
-      //console.log(loc);
-      let circle = new google.maps.Circle({
-        strokeColor: '#000000',
-        strokeOpacity: 1.0,
-        strokeWeight: 1,
-        fillColor: '#020202',
-        fillOpacity: 0.8,
-        //map: map,
-        center: {lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]},
-        radius: 2,
-      });
-      userLocs[loc.properties.id]={lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]};
-      addShape(circle);
-    }
+    console.log("flyers:"+flyers.length+" notifs:"+notifs.length);
 
     //
     let now=Math.floor((new Date).getTime()/1000);
@@ -201,14 +187,13 @@ geoInfo.prototype = {
   },
   post          : function() {
     this.setBounds(map.getBounds());
-    doPost('/location',this.request,this.drawResponse);
+    doHttp('POST','/location',this.request,this.drawResponse);
     this.clearRequest();
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   }
 }
 
 var initMap = function() {
-
   var info = new geoInfo();
   shapes=[];
   flyerIDs={};
@@ -242,3 +227,7 @@ var initMap = function() {
   info.startPost();
 };
 
+var initHttp = function() {
+  locInfo = new locationInfo();
+  locInfo.startPost()
+}

@@ -56,6 +56,10 @@ func (s *server) routes() {
 	s.router.HandleFunc("/portal", s.portal())
 	s.router.HandleFunc("/location", s.handleLocation())
 	s.router.HandleFunc("/footway", s.handleFootway())
+	s.router.HandleFunc("/api/locations", s.handleLocations())
+	//s.router.HandleFunc("/api/locations/", s.handleSingleLocation())
+	//s.router.HandleFunc("/api/flyers", s.handleFlyers())
+	//s.router.HandleFunc("/api/flyers/", s.handleSingleFlyer())
 	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 }
 
@@ -68,6 +72,7 @@ func (s *server) handleHello() http.HandlerFunc {
 func (s *server) handleDefault() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Default Handler!!")
+		log.Printf("URL=%v\n", r.URL)
 		http.Redirect(w, r, "/portal", 301)
 	}
 }
@@ -149,21 +154,6 @@ func (s *server) handleLocation() http.HandlerFunc {
 
 		// ----------------------------------------------------------------------------------------
 		// MAKE REAPONSE DATA
-		// 1. locations
-		var locations []db.GeoJsonFeature
-		var locationJson []byte
-		locations, err = db.LocationWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
-		if err != nil {
-			log.Printf("WithiLocation error: %v\n", err)
-			return
-		}
-		locationJson, err = json.Marshal(locations)
-		if err != nil {
-			log.Printf("Location Marshal error: %v\n", err)
-			return
-		}
-		//fmt.Fprintf(w, "%s", locationJson)
-
 		// 2. flyers
 		var flyers []db.GeoJsonFeature
 		var flyerJson []byte
@@ -196,26 +186,11 @@ func (s *server) handleLocation() http.HandlerFunc {
 		//fmt.Fprintf(w, "%s", notificationJson)
 
 		// write json data
-		fmt.Fprintf(w, `{"locations": %s,"flyers": %s, "notifications": %s}`, locationJson, flyerJson, notificationJson)
+		fmt.Fprintf(w, `{"flyers": %s, "notifications": %s}`, flyerJson, notificationJson)
+		//fmt.Fprintf(w, `{"locations": %s,"flyers": %s, "notifications": %s}`, locationJson, flyerJson, notificationJson)
 
 		fmt.Printf("request: {bounds: %v ,flyers: %v }\t", len(reqInfo.Bounds), len(reqInfo.Flyers))
-		fmt.Printf("response: {locations: %v ,flyers: %v , notifications: %v }\n", len(locations), len(flyers), len(notifications))
-	}
-}
-
-func (s *server) handleFootway() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Footway Request:")
-
-		w.WriteHeader(http.StatusOK)
-
-		data, err := getFootway()
-		if err != nil {
-			log.Printf("Read json file failed!!")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		fmt.Fprintf(w, string(data))
-
+		//fmt.Printf("response: {locations: %v ,flyers: %v , notifications: %v }\n", len(locations), len(flyers), len(notifications))
+		fmt.Printf("response: {flyers: %v , notifications: %v }\n", len(flyers), len(notifications))
 	}
 }

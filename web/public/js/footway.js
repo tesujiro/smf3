@@ -92,7 +92,7 @@ var drawFootway = function() {
       });
     }
   }
-  doPost('/footway',null,callback);
+  doHttp('POST','/footway',null,callback);
 };
 
 var footways=[];

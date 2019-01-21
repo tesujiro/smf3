@@ -19,10 +19,11 @@ import (
 
 //const number_of_ramblers = 1000
 
-const number_of_ramblers = 500
+//const number_of_ramblers = 500
 
 //const number_of_ramblers = 100
-//const number_of_ramblers = 10
+const number_of_ramblers = 10
+
 //const number_of_ramblers = 1
 
 type VirtualCity struct {
