@@ -92,11 +92,11 @@ var initMap = function() {
 
 var initHttp = function() {
   locInfo = new locationInfo();
-  locInfo.startPost()// TODO: Post-> Get
+  locInfo.startGet();
 
   flyInfo = new flyerInfo();
-  flyInfo.startGet()
+  flyInfo.startGet();
 
   notifInfo = new notifInfo();
-  notifInfo.startPost()// TODO: Post-> Get
+  notifInfo.startGet();
 }

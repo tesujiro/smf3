@@ -6,12 +6,12 @@ function notifInfo() {
 };
 
 notifInfo.prototype = {
-  stopPostTimer : function() {
+  stopGetTimer : function() {
     clearTimeout(this.postTimer);
     this.postTimer=0;
   },
-  startPost: function(){
-    this.stopPostTimer(); // avoid duplicate timer
+  startGet: function(){
+    this.stopGetTimer(); // avoid duplicate timer
     this.postTimer=setTimeout(this.post.bind(this), this.Interval);
   },
   drawResponse: function(responseJson){
