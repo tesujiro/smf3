@@ -5,14 +5,13 @@ function flyerInfo() {
 };
 
 flyerInfo.prototype = {
-  //flyerIDs: {},
-  stopPostTimer : function() {
+  stopGetTimer : function() {
     clearTimeout(this.postTimer);
     this.postTimer=0;
   },
-  startPost: function(){
-    this.stopPostTimer(); // avoid duplicate timer
-    this.postTimer=setTimeout(this.post.bind(this), this.Interval);
+  startGet: function(){
+    this.stopGetTimer(); // avoid duplicate timer
+    this.postTimer=setTimeout(this.get.bind(this), this.Interval);
   },
   drawResponse: function(responseJson){
     let flyers = JSON.parse(responseJson);
@@ -24,7 +23,6 @@ flyerInfo.prototype = {
       //console.log("now:"+now);
       //console.log("start:"+flyer.properties.startAt)
       //console.log("end:"+flyer.properties.endAt)
-      console.log("this.Interval:"+this.Interval);
       if ( !this.flyerIDs[flyer.properties.id] 
         && flyer.properties.startAt <= now
         && now <= flyer.properties.endAt
@@ -47,11 +45,24 @@ flyerInfo.prototype = {
       }
     }
   },
-  post          : function() {
+  get          : function() {
     let bounds=map.getBounds();
     //console.log(bounds);
-    let url='/api/flyers?south='+bounds.getSouthWest().lat()+'&west='+bounds.getSouthWest().lng()+'&north='+bounds.getNorthEast().lat()+'&east='+bounds.getNorthEast().lng()
+    let url='/api/flyers?south='+bounds.getSouthWest().lat()+'&west='+bounds.getSouthWest().lng()+'&north='+bounds.getNorthEast().lat()+'&east='+bounds.getNorthEast().lng();
     doHttp('GET',url,this.request,this.drawResponse.bind(this));
-    this.postTimer=setTimeout(this.post.bind(this), this.Interval);
+    this.postTimer=setTimeout(this.get.bind(this), this.Interval);
+  },
+  post         : function(id,validPeriod,lat,lng,title,distance){
+    flyer={
+      "storeId"     : id,
+      "title"       : title,
+      "validPeriod" : validPeriod,
+      "latitude"    : lat,
+      "longitude"   : lng,
+      "distance"    : distance,
+      "stocked"     : 10,
+    };
+    let url='/api/flyers';
+    doHttp('POST',url,flyer,function(){});
   }
 }

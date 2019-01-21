@@ -3,7 +3,7 @@ const centerLatitude=35.6581;
 const centerLongitude=139.6975;
 var shapes;
 var locInfo;
-//var flyerInfo;
+var flyInfo;
 //var notifInfo;
 
 var addShape = function(shape){
@@ -61,62 +61,8 @@ var doHttp = function(method,url,requestInfo,handleFunc){
   req.send(parameters);
 }
 
-function geoInfo() {
-  this.request = {
-      bounds: {},
-      flyers: [],
-  };
-  this.postTimer = 0;
-  this.Interval = 1000; // 1 seconds
-  //this.Interval = 60000; // 60 seconds
-};
-
-geoInfo.prototype = {
-  clearRequest : function() {
-    this.request={
-      bounds: {},
-      flyers: [],
-    };
-  },
-  setBounds  : function(bounds){
-    //this.request.bounds=bounds;
-    //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
-  },
-  pushFlyer  : function(id,validPeriod,lat,lng,title,distance){
-    this.request.flyers.push({
-      "storeId"     : id,
-      "title"       : title,
-      "validPeriod" : validPeriod,
-      "latitude"    : lat,
-      "longitude"   : lng,
-      "distance"    : distance,
-      "stocked"     : 10,
-    });
-    //console.log("pushFlyer:"+this.request.length+" :"+this.request[this.request.length-1]);
-  },
-  //postTimer     : 0,
-  stopPostTimer : function() {
-    clearTimeout(this.postTimer);
-    this.postTimer=0;
-  },
-  startPost: function(){
-    this.stopPostTimer(); // avoid duplicate timer
-    this.postTimer=setTimeout(this.post.bind(this), this.Interval);
-  },
-  drawResponse: function(responseJson){ },
-  post          : function() {
-    this.setBounds(map.getBounds());
-    doHttp('POST','/location',this.request,this.drawResponse);
-    this.clearRequest();
-    this.postTimer=setTimeout(this.post.bind(this), this.Interval);
-  }
-}
-
 var initMap = function() {
-  var info = new geoInfo();
   shapes=[];
-  //notifIDs={};
-  //notifIDsByUserID={};
   console.log('Lat=' + centerLatitude + ' Lng=' + centerLongitude);
   drawMap(centerLatitude,centerLongitude);
 
@@ -129,7 +75,7 @@ var initMap = function() {
     var validPeriod = Number(document.forms.form1.validPeriod.value);
     console.log("title="+title)
     console.log("distance="+distance)
-    info.pushFlyer(1 ,validPeriod , lat, lng, title, distance);
+    flyInfo.post(1 ,validPeriod , lat, lng, title, distance);
     let circle = new google.maps.Circle({
       strokeColor: '#FF0000',
       strokeOpacity: 0.8,
@@ -142,16 +88,15 @@ var initMap = function() {
     });
     addShape(circle);
   });
-  info.startPost();
 };
 
 var initHttp = function() {
   locInfo = new locationInfo();
-  locInfo.startPost()
+  locInfo.startPost()// TODO: Post-> Get
 
-  flyerInfo = new flyerInfo();
-  flyerInfo.startPost()
+  flyInfo = new flyerInfo();
+  flyInfo.startGet()
 
   notifInfo = new notifInfo();
-  notifInfo.startPost()
+  notifInfo.startPost()// TODO: Post-> Get
 }

@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,11 +14,6 @@ import (
 
 func (s *server) handleFlyers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "application/json" {
-			log.Printf("bad Content-Type!!")
-			log.Printf(r.Header.Get("Content-Type"))
-		}
-
 		switch r.Method {
 		case http.MethodPost:
 			s.handlePostFlyers(w, r)
@@ -71,5 +67,56 @@ func (s *server) handleGetFlyers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlePostFlyers(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("Content-Type") != "application/json" {
+		log.Printf("bad Content-Type!!")
+		log.Printf(r.Header.Get("Content-Type"))
+	}
+
+	//To allocate slice for request body
+	length, err := strconv.Atoi(r.Header.Get("Content-Length"))
+	if err != nil {
+		log.Printf("Content-Length failed!!")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	//Read body data to parse json
+	body := make([]byte, length)
+	_, err = r.Body.Read(body)
+	if err != nil && err != io.EOF {
+		log.Printf("read failed!!\n")
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	//log.Printf("Content-Length:%v", length)
+	//log.Printf("Content-Body:%s", body)
+
+	/*
+		type Req struct {
+			Bounds map[string]float64 `json:"bounds"`
+			Flyers []db.Flyer         `json:"flyers"`
+			//Flyers []map[string]interface{} `json:"flyers"`
+		}
+	*/
+
+	//var reqInfo Req
+	var flyer db.Flyer
+	if err := json.Unmarshal(body, &flyer); err != nil {
+		log.Printf("Request body unmarshaling  error: %v\n", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	fmt.Println("flyer:%v\n", flyer)
+	now := time.Now().Unix()
+	flyer.ID = now //TODO: temporary
+	flyer.StartAt = now
+	flyer.EndAt = now + flyer.ValidPeriod
+	if err := flyer.Set(); err != nil {
+		log.Printf("Set Flyer error: (%v) flyer:%v\n", err, flyer)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
 	return
 }
