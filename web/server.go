@@ -2,16 +2,12 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"html/template"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/tesujiro/smf3/data/db"
 	"github.com/tesujiro/smf3/match"
@@ -54,7 +50,6 @@ func (s *server) routes() {
 	s.router.HandleFunc("/", s.handleDefault())
 	s.router.HandleFunc("/greet", s.handleHello())
 	s.router.HandleFunc("/portal", s.portal())
-	s.router.HandleFunc("/location", s.handleLocation())
 	s.router.HandleFunc("/footway", s.handleFootway()) // TODO: /api/footways
 	s.router.HandleFunc("/api/locations", s.handleLocations())
 	//s.router.HandleFunc("/api/locations/", s.handleSingleLocation())
@@ -97,72 +92,4 @@ type jsonmap map[string]interface{}
 func getFootway() ([]byte, error) {
 	path := "../data/osm/ways_on_browser.json"
 	return ioutil.ReadFile(path)
-}
-
-func (s *server) handleLocation() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		//log.Printf("Location Received:")
-
-		if r.Header.Get("Content-Type") != "application/json" {
-			log.Printf("bad Content-Type!!")
-			log.Printf(r.Header.Get("Content-Type"))
-		}
-
-		//To allocate slice for request body
-		length, err := strconv.Atoi(r.Header.Get("Content-Length"))
-		if err != nil {
-			log.Printf("Content-Length failed!!")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-
-		//Read body data to parse json
-		body := make([]byte, length)
-		length, err = r.Body.Read(body)
-		if err != nil && err != io.EOF {
-			log.Printf("read failed!!\n")
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		//log.Printf("Content-Length:%v", length)
-		//log.Printf("Content-Body:%s", body)
-
-		type Req struct {
-			Bounds map[string]float64 `json:"bounds"`
-			Flyers []db.Flyer         `json:"flyers"`
-			//Flyers []map[string]interface{} `json:"flyers"`
-		}
-		type Flyer struct {
-		}
-		var reqInfo Req
-		if err := json.Unmarshal(body, &reqInfo); err != nil {
-			log.Printf("Request body marshaling  error: %v\n", err)
-			return
-		}
-
-		//bounds := reqInfo.Bounds
-		//fmt.Printf("request.bounds=%v\n", bounds)
-
-		for _, f := range reqInfo.Flyers {
-			now := time.Now().Unix()
-			f.ID = now //TODO: temporary
-			f.StartAt = now
-			f.EndAt = now + f.ValidPeriod
-			if err := f.Set(); err != nil {
-				log.Printf("Set Flyer error: (%v) flyer:%v\n", err, f)
-				return
-			}
-		}
-
-		// ----------------------------------------------------------------------------------------
-		// MAKE REAPONSE DATA
-
-		// write json data
-		fmt.Fprintf(w, `{}`)
-		//fmt.Fprintf(w, `{"locations": %s,"flyers": %s, "notifications": %s}`, locationJson, flyerJson, notificationJson)
-
-		fmt.Printf("request: {bounds: %v ,flyers: %v }\t", len(reqInfo.Bounds), len(reqInfo.Flyers))
-		//fmt.Printf("response: {locations: %v ,flyers: %v , notifications: %v }\n", len(locations), len(flyers), len(notifications))
-		fmt.Printf("response: { }\n")
-	}
 }

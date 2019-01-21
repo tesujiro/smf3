@@ -60,7 +60,6 @@ func (s *server) handleGetFlyers(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Flyer Marshal error: %v\n", err)
 		return
 	}
-	//fmt.Printf("flyerJson:%s\n", flyerJson)
 
 	fmt.Fprintf(w, string(flyerJson))
 	return
@@ -88,18 +87,7 @@ func (s *server) handlePostFlyers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	//log.Printf("Content-Length:%v", length)
-	//log.Printf("Content-Body:%s", body)
 
-	/*
-		type Req struct {
-			Bounds map[string]float64 `json:"bounds"`
-			Flyers []db.Flyer         `json:"flyers"`
-			//Flyers []map[string]interface{} `json:"flyers"`
-		}
-	*/
-
-	//var reqInfo Req
 	var flyer db.Flyer
 	if err := json.Unmarshal(body, &flyer); err != nil {
 		log.Printf("Request body unmarshaling  error: %v\n", err)
