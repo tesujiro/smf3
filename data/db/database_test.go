@@ -241,16 +241,3 @@ func TestWithin(t *testing.T) {
 		}
 	}
 }
-
-/*
-	// Test WITHIN BOUNDS
-	testBounds := []struct {
-		s, w, n, e float64
-		key        string
-		args       []interface{}
-		expected   int
-	}{
-		{s: 0, w: 0, n: 0, e: 0, key: "key1", expected: 1},
-		{s: 0, w: 0, n: 0, e: 0, key: "key2", expected: 0},
-	}
-*/
