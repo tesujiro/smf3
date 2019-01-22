@@ -1,5 +1,6 @@
 test:
-	go test -v ./data/db
+	go vet ./...
+	go test -v ./data/db ./web
 
 restart:
 	kill -9 `ps -ef | grep tile38 | grep -v grep |awk '{print $$2}'` && tile38-server &

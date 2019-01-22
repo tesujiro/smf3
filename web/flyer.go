@@ -95,7 +95,7 @@ func (s *server) handlePostFlyers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("flyer:%v\n", flyer)
+	fmt.Printf("flyer:%v\n", flyer)
 	now := time.Now().Unix()
 	flyer.ID = now //TODO: temporary
 	flyer.StartAt = now
