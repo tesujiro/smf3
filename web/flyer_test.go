@@ -16,8 +16,8 @@ import (
 func TestAPIFlyers(t *testing.T) {
 	now := time.Now().Unix()
 	flyers := []*db.Flyer{
-		&db.Flyer{ID: 0, OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
-		&db.Flyer{ID: 1, OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
+		&db.Flyer{OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
+		&db.Flyer{OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
 		&db.Flyer{OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
 	}
 	data := []*db.Flyer{flyers[0], flyers[1]}
@@ -37,6 +37,7 @@ func TestAPIFlyers(t *testing.T) {
 
 	// SET DATA
 	for _, flyer := range data {
+		flyer.ID = db.NewFlyerID()
 		if err := flyer.Set(); err != nil {
 			t.Fatalf("Set Flyer error: (%v) flyer:%v\n", err, flyer)
 		}

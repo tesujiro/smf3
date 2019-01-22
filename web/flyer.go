@@ -97,7 +97,7 @@ func (s *server) handlePostFlyers(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Printf("flyer:%v\n", flyer)
 	now := time.Now().Unix()
-	flyer.ID = now //TODO: temporary
+	flyer.ID = db.NewFlyerID()
 	flyer.StartAt = now
 	flyer.EndAt = now + flyer.ValidPeriod
 	if err := flyer.Set(); err != nil {

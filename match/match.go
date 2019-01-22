@@ -106,7 +106,8 @@ func (m *Matcher) match() error {
 			//fmt.Printf("location:{userID:%v,lat:%v,lon:%v}\n", userID, lat, lon)
 			now := time.Now().Unix()
 			n := &db.Notification{
-				ID:           flyerID*100 + int64(userID), //TODO:
+				//ID:           flyerID*100 + int64(userID), //TODO:
+				ID:           db.NewNotificationID(),
 				FlyerID:      int64(flyerID),
 				UserID:       int64(userID),
 				Lat:          lat,

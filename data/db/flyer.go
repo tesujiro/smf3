@@ -20,6 +20,13 @@ type Flyer struct {
 	Delivered   int     `json:"delivered"`
 }
 
+var currentFlyerID int64 = 0
+
+func NewFlyerID() int64 {
+	currentFlyerID++
+	return currentFlyerID
+}
+
 func (fly *Flyer) geoJson() (string, error) {
 	feature := &GeoJsonFeature{
 		Type: "Feature",

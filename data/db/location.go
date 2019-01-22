@@ -13,6 +13,13 @@ type Location struct {
 	Time string
 }
 
+var currentLocationID int64 = 0
+
+func NewLocationID() int64 {
+	currentLocationID++
+	return currentLocationID
+}
+
 func (loc *Location) geoJson() (string, error) {
 	feature := &GeoJsonFeature{
 		Type: "Feature",
