@@ -72,16 +72,6 @@ func (m *Matcher) match() error {
 
 	for _, f := range flyers {
 		//fmt.Printf("flyer:%#v\n", f)
-		// TODO: YURUFUA -> struct
-		/*
-			lat := f.(map[string]interface{})["geometry"].(map[string]interface{})["coordinates"].([]interface{})[1].(float64)
-			lon := f.(map[string]interface{})["geometry"].(map[string]interface{})["coordinates"].([]interface{})[0].(float64)
-			distance := f.(map[string]interface{})["properties"].(map[string]interface{})["distance"].(float64)
-			flyerID := f.(map[string]interface{})["properties"].(map[string]interface{})["id"].(float64)          //TODO
-			stocked := f.(map[string]interface{})["properties"].(map[string]interface{})["stocked"].(float64)     //TODO
-			delivered := f.(map[string]interface{})["properties"].(map[string]interface{})["delivered"].(float64) //TODO
-			//fmt.Printf("flyer:{lat:%v,lon:%v,distance:%v}\n", lat, lon, distance)
-		*/
 		lat := f.Lat
 		lon := f.Lon
 		distance := f.Distance
