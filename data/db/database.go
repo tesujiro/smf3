@@ -120,7 +120,8 @@ func db_withinBounds(c redis.Conn, key string, s, w, n, e float64, args ...inter
 }
 
 func db_withinCircle(c redis.Conn, key string, lat, lon, meters float64, args ...interface{}) ([]GeoJsonFeature, error) {
-	func_args := append([]interface{}{"LIMIT", MAX_NUMBER, "CIRCLE", lat, lon, meters}, args...)
+	func_args := append([]interface{}{"LIMIT", MAX_NUMBER}, args...)
+	func_args = append(func_args, []interface{}{"CIRCLE", lat, lon, meters}...)
 	//fmt.Printf("db_withinCircle: func_args(%#v)\n", func_args)
 	return db_retrieve(c, "WITHIN", key, func_args...)
 }

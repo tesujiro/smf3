@@ -154,6 +154,92 @@ func TestScan(t *testing.T) {
 			t.Errorf("Case:[%v] received: %v - expected: %v", i, len(features), test.expectedLen)
 		}
 	}
+	for _, key := range []string{"test-key1"} {
+		err := db_drop(c, key)
+		if err != nil {
+			t.Fatalf("DROP DB (key:%v) error: %v", key, err)
+		}
+	}
+}
+
+func TestWithin(t *testing.T) {
+	data := []struct {
+		key      string
+		id       string
+		lat, lon float64
+		time     float64
+	}{
+		{key: "test-key1", id: "id1", lat: 0, lon: 0, time: 100},
+		{key: "test-key1", id: "id2", lat: 1.23, lon: 4.56, time: 10},
+		{key: "test-key1", id: "id3", lat: 1, lon: 2, time: 500},
+		{key: "test-key1", id: "id4", lat: 0, lon: 0, time: 0},
+	}
+	tests := []struct {
+		key              string
+		area             string
+		s, w, n, e       float64
+		lat, lon, meters float64
+		args             []interface{}
+		expectedLen      int
+	}{
+		{key: "test-key1", area: "bounds", s: 0, w: 0, n: 2, e: 2, expectedLen: 3},
+		{key: "test-key2", area: "bounds", s: 0, w: 0, n: 2, e: 2, expectedLen: 0},
+		{key: "test-key1", area: "bounds", s: 0, w: 0, n: 2, e: 2, args: []interface{}{"WHERE", "time", 0, 100}, expectedLen: 2},
+		{key: "test-key1", area: "circle", lat: 0, lon: 0, meters: 500000, expectedLen: 3},
+		{key: "test-key2", area: "circle", lat: 0, lon: 0, meters: 500000, expectedLen: 0},
+		{key: "test-key1", area: "circle", lat: 0, lon: 0, meters: 500000, args: []interface{}{"WHERE", "time", 0, 100}, expectedLen: 2},
+	}
+
+	c := pool.Get()
+	defer c.Close()
+	for _, record := range data {
+		feature := &GeoJsonFeature{ // [0]
+			Type: "Feature",
+			Geometry: &Geometry{
+				Type:        "Point",
+				Coordinates: [2]float64{record.lon, record.lat},
+			},
+			Properties: map[string]interface{}{
+				"id":   record.id,
+				"time": record.time,
+			},
+		}
+		var test_json string
+		b, err := json.Marshal(feature)
+		if err != nil {
+			t.Fatalf("JSON Marshal error: %v", err)
+		}
+		test_json = string(b)
+		if err := db_set_json(c, record.key, record.id, test_json, "FIELD", "time", record.time); err != nil {
+			t.Fatalf("SET DB error: %v", err)
+		}
+	}
+	for i, test := range tests {
+		switch test.area {
+		case "bounds":
+			features, err := db_withinBounds(c, test.key, test.s, test.w, test.n, test.e, test.args...)
+			if err != nil {
+				t.Fatalf("WITHIN DB error: %v", err)
+			}
+			if len(features) != test.expectedLen {
+				t.Errorf("Case:[%v] received: %v - expected: %v", i, len(features), test.expectedLen)
+			}
+		case "circle":
+			features, err := db_withinCircle(c, test.key, test.lat, test.lon, test.meters, test.args...)
+			if err != nil {
+				t.Fatalf("WITHIN DB error: %v", err)
+			}
+			if len(features) != test.expectedLen {
+				t.Errorf("Case:[%v] received: %v - expected: %v", i, len(features), test.expectedLen)
+			}
+		}
+	}
+	for _, key := range []string{"test-key1"} {
+		err := db_drop(c, key)
+		if err != nil {
+			t.Fatalf("DROP DB (key:%v) error: %v", key, err)
+		}
+	}
 }
 
 /*
