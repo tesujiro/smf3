@@ -9,7 +9,7 @@ import (
 )
 
 func TestServer(t *testing.T) {
-	cases := []struct {
+	tests := []struct {
 		method string
 		url    string
 		status int
@@ -23,8 +23,8 @@ func TestServer(t *testing.T) {
 	}
 	srv := newServer()
 	srv.routes()
-	for _, c := range cases {
-		req, err := http.NewRequest(c.method, c.url, nil)
+	for _, test := range tests {
+		req, err := http.NewRequest(test.method, test.url, nil)
 		if err != nil {
 			t.Errorf("failed http.NewRequest %v", err)
 		}
@@ -32,20 +32,20 @@ func TestServer(t *testing.T) {
 		srv.router.ServeHTTP(w, req)
 		r := w.Result()
 		//fmt.Printf("Result:%#v\n", r)
-		if c.status == 0 && r.StatusCode != http.StatusOK ||
-			c.status != 0 && r.StatusCode != c.status {
+		if test.status == 0 && r.StatusCode != http.StatusOK ||
+			test.status != 0 && r.StatusCode != test.status {
 			fmt.Printf("result:%#v\n", r)
-			t.Errorf("method:%v url:%v StatusCode:%v", c.method, c.url, r.StatusCode)
+			t.Errorf("method:%v url:%v StatusCode:%v", test.method, test.url, r.StatusCode)
 		}
 		//fmt.Printf("header.Location:%#v\n", r.Header["Location"])
 		data, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			fmt.Printf("result:%#v\n", r)
-			t.Errorf("method:%v url:%v Error by ioutil.ReadAll(). %v", c.method, c.url, err)
+			t.Errorf("method:%v url:%v Error by ioutil.ReadAll(). %v", test.method, test.url, err)
 		}
-		if c.body != "" && string(data) != c.body {
+		if test.body != "" && string(data) != test.body {
 			fmt.Printf("result:%#v\n", r)
-			t.Errorf("method:%v url:%v Data Error. [%v]", c.method, c.url, string(data))
+			t.Errorf("method:%v url:%v Data Error. [%v]", test.method, test.url, string(data))
 		}
 	}
 }
