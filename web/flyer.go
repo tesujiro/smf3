@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/tesujiro/smf3/data/db"
@@ -30,20 +31,50 @@ func (s *server) handleFlyers() http.HandlerFunc {
 }
 
 func (s *server) handleGetFlyers(w http.ResponseWriter, r *http.Request) {
-	bounds := make(map[string]float64, 4)
+	bounds := make(map[string]float64)
 	query := r.URL.Query()
 	for k, v := range query {
 		//fmt.Printf("Query %v:%v\n", k, v)
-		if len(v) > 1 {
-			log.Printf("Query parameter conversion error: %v has more than one values\n", k)
+		k = strings.ToLower(k)
+		switch k {
+		case "south", "west", "north", "east":
+			if len(v) > 1 {
+				log.Printf("Query parameter conversion error: %v has more than one values\n", k)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			f, err := strconv.ParseFloat(v[0], 64)
+			if err != nil {
+				log.Printf("Query parameter conversion error: %v\n", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			bounds[k] = f
+		/*
+			case "lat", "lon", "meters":
+				if len(v) > 1 {
+					log.Printf("Query parameter conversion error: %v has more than one values\n", k)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				f, err := strconv.ParseFloat(v[0], 64)
+				if err != nil {
+					log.Printf("Query parameter conversion error: %v\n", err)
+					w.WriteHeader(http.StatusInternalServerError)
+					return
+				}
+				bounds[k] = f
+		*/
+		default:
+			log.Printf("Unknown query parameter: %v\n", k)
+			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		f, err := strconv.ParseFloat(v[0], 64)
-		if err != nil {
-			log.Printf("Query parameter conversion error: %v\n", err)
-			return
-		}
-		bounds[k] = f
+	}
+	if len(bounds) != 4 {
+		log.Printf("Query parameter error: not all directions: %v\n", len(bounds))
+		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 
 	var flyers []db.GeoJsonFeature

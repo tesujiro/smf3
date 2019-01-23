@@ -24,14 +24,18 @@ func TestAPIFlyers(t *testing.T) {
 	tests := []struct {
 		method         string
 		url            string
-		bounds         map[string]float64
+		bounds         map[string]string
 		flyer          *db.Flyer
 		body           string
 		status         int
 		header         map[string]string
 		expectedLength int
 	}{
-		{method: "GET", url: "/api/flyers", bounds: map[string]float64{"south": 0, "west": 0, "north": 0, "east": 0}, expectedLength: 2},
+		{method: "GET", url: "/api/flyers", bounds: map[string]string{"south": "0", "west": "0", "north": "0", "east": "0"}, expectedLength: 2},
+		{method: "GET", url: "/api/flyers", bounds: map[string]string{}, status: 500},
+		{method: "GET", url: "/api/flyers", bounds: map[string]string{"xxx": "0"}, status: 500},
+		{method: "GET", url: "/api/flyers", bounds: map[string]string{"south": "0", "west": "0", "north": "0", "east": "xxx"}, status: 500},
+		{method: "GET", url: "/api/flyers", bounds: map[string]string{"south": "0", "west": "0", "north": "0"}, status: 500},
 		{method: "POST", url: "/api/flyers", flyer: flyers[2], expectedLength: 3},
 	}
 
@@ -48,13 +52,16 @@ func TestAPIFlyers(t *testing.T) {
 	srv.routes()
 	for test_number, test := range tests {
 		if test.method == http.MethodGet {
-			test.url = fmt.Sprintf("%v?south=%v&west=%v&north=%v&east=%v", test.url, test.bounds["south"], test.bounds["west"], test.bounds["north"], test.bounds["east"])
+			test.url = fmt.Sprintf("%v?", test.url)
+			for k, v := range test.bounds {
+				test.url = fmt.Sprintf("%v&%v=%v", test.url, k, v)
+			}
 		}
 		var reqBody []byte
 		if test.method == http.MethodPost {
 			var err error
 			if reqBody, err = json.Marshal(test.flyer); err != nil {
-				t.Errorf("Test[%v] failed request body marshaling: %v", test_number, err)
+				t.Errorf("Test[%v] failed to marshal request body: %v", test_number, err)
 			}
 		}
 		req, err := http.NewRequest(test.method, test.url, bytes.NewReader(reqBody))
@@ -71,6 +78,9 @@ func TestAPIFlyers(t *testing.T) {
 			test.status != 0 && r.StatusCode != test.status {
 			fmt.Printf("result:%#v\n", r)
 			t.Errorf("Test[%v] method:%v url:%v StatusCode:%v", test_number, test.method, test.url, r.StatusCode)
+		}
+		if test.status != 0 {
+			continue
 		}
 		//fmt.Printf("header.Location:%#v\n", r.Header["Location"])
 		switch test.method {
