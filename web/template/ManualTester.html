@@ -1,51 +1,51 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-	<title>Consumer Manual Tester</title>
-	<meta name="viewport" content="initial-scale=1.0">
-	<meta charset="utf-8">
-	<script src="/static/js/location.js"></script>
-	<script src="/static/js/flyers.js"></script>
-	<script src="/static/js/notification.js"></script>
-	<script src="/static/js/footway.js"></script>
-	<script src="/static/js/main.js"></script>
-	<script src="https://maps.googleapis.com/maps/api/js?key={{.APIKEY}}"></script>
-	<script>
+	<head>
+		<title>Consumer Manual Tester</title>
+		<meta name="viewport" content="initial-scale=1.0">
+		<meta charset="utf-8">
+		<script src="/static/js/location.js"></script>
+		<script src="/static/js/flyers.js"></script>
+		<script src="/static/js/notification.js"></script>
+		<script src="/static/js/footway.js"></script>
+		<script src="/static/js/main.js"></script>
+		<script src="https://maps.googleapis.com/maps/api/js?key={{.APIKEY}}"></script>
+		<script>
 window.onload = function(){
 	initMap();
-        initHttp();
+	initHttp();
 };
-	</script>
-	<style>
+		</script>
+		<style>
 #map {
 	height: 500px;
 	width: auto;
 }
-	</style>
-</head>
-<body>
-	<div id="currentLat"></div>
-	<div id="currentLon"></div>
-	<div id="map"></div>
-	<form name="update" id="form1">
-        <table border="0">
-                <tr>
-                        <td><input type="button" value="Reset" onClick="initMap()"></td>
-                        <td><input type="button" value="Footway" onClick="toggleFootway()"></td>
-                </tr>
-                <tr>
-                        <td align="right">Flyer Title</td>
-                        <td><input type="text" id="title" value="Campaign!"></td>
-                </tr>
-                <tr>
-                        <td align="right">Distance</td>
-                        <td><input type="text" id="distance" value="100">meters</td>
-                </tr>
-                <tr>
-                        <td align="right">Valid Period</td>
-                        <td><input type="text" id="validPeriod" value="20">seconds</td>
-                </tr>
-        </table>
-	</form>
-</body>
+		</style>
+	</head>
+	<body>
+		<div id="currentLat"></div>
+		<div id="currentLon"></div>
+		<div id="map"></div>
+		<form name="update" id="form1">
+			<table border="0">
+				<tr>
+					<td><input type="button" value="Reset" onClick="initMap()"></td>
+					<td><input type="button" value="Footway" onClick="toggleFootway()"></td>
+				</tr>
+				<tr>
+					<td align="right">Flyer Title</td>
+					<td><input type="text" id="title" value="Campaign!"></td>
+				</tr>
+				<tr>
+					<td align="right">Distance</td>
+					<td><input type="text" id="distance" value="100">meters</td>
+				</tr>
+				<tr>
+					<td align="right">Valid Period</td>
+					<td><input type="text" id="validPeriod" value="20">seconds</td>
+				</tr>
+			</table>
+		</form>
+	</body>
 </html>
