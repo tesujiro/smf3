@@ -26,7 +26,7 @@ type rambler struct {
 
 func newRambler(ID int64, lat, lon float64, nodeID, wayID int64) *rambler {
 	rambler := rambler{
-		Location:     db.Location{ID: ID, Lat: lat, Lon: lon, Time: time.Now().Format(time.RFC3339)},
+		Location:     db.Location{ID: ID, Lat: lat, Lon: lon, Time: time.Now().Unix()},
 		curNodeID:    nodeID,
 		prevNodeID:   nodeID,
 		curWayID:     wayID,

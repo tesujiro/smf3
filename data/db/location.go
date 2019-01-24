@@ -10,7 +10,7 @@ type Location struct {
 	ID   int64
 	Lat  float64
 	Lon  float64
-	Time string
+	Time int64
 }
 
 var currentLocationID int64 = 0
