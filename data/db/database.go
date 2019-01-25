@@ -18,7 +18,7 @@ func init() {
 	pool = &redis.Pool{
 		MaxIdle:     1024,
 		MaxActive:   1024,
-		IdleTimeout: 60 * time.Second,
+		IdleTimeout: 20 * time.Second,
 		Dial:        db_connect,
 		//Wait:        true,
 	}

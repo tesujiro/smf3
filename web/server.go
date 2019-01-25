@@ -57,7 +57,7 @@ func (s *server) routes() {
 	//s.router.HandleFunc("/api/flyers/", s.handleSingleFlyer())
 	s.router.HandleFunc("/api/notifications", s.handleNotifications())
 	//s.router.HandleFunc("/api/notifications/", s.handleSingleNotifs())
-	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
+	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/public"))))
 }
 
 func (s *server) handleHello() http.HandlerFunc {
@@ -77,7 +77,7 @@ func (s *server) handleDefault() http.HandlerFunc {
 func (s *server) portal() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Consumer Manual Tester Page!!")
-		tpl := template.Must(template.ParseFiles("template/ManualTester.html"))
+		tpl := template.Must(template.ParseFiles("./web/template/ManualTester.html"))
 		w.Header().Set("Content-Type", "text/html")
 
 		err := tpl.Execute(w, map[string]string{"APIKEY": os.Getenv("APIKEY")})
