@@ -38,8 +38,8 @@ type VirtualCity struct {
 	cancelFunc func()
 }
 
-const jsonPathWays = "../../data/osm/ways.json"
-const jsonPathNodes = "../../data/osm/nodes.json"
+const jsonPathWays = "./data/osm/ways.json"
+const jsonPathNodes = "./data/osm/nodes.json"
 
 func NewVirtualCity(ctx context.Context, latc, lonc, latw, lonw float64) *VirtualCity {
 	var nodes []Node
