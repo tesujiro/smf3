@@ -20,6 +20,8 @@ import (
 
 var number_of_ramblers int
 
+const rampup_msec = 1
+
 type VirtualCity struct {
 	nodes      map[int64]Node
 	ways       map[int64]Way
@@ -114,6 +116,7 @@ func NewVirtualCity(ctx context.Context, latc, lonc, latw, lonw float64) *Virtua
 		r := vc.addRambler(db.NewLocationID())
 		//fmt.Printf("i=%v lat=%v lon=%v NodeID=%v\tWayID=%v\ttags=%#v\n", i, r.Lat, r.Lon, r.curNodeID, r.curWayID, vc.ways[r.curWayID].Tags)
 		go r.walk(ctx, vc.nodes, vc.ways, vc.node2way)
+		time.Sleep(rampup_msec * time.Millisecond)
 	}
 
 	return &vc
