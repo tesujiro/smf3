@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -17,14 +18,7 @@ import (
 	"github.com/tesujiro/smf3/debug"
 )
 
-//const number_of_ramblers = 1000
-
-//const number_of_ramblers = 500
-
-//const number_of_ramblers = 100
-const number_of_ramblers = 10
-
-//const number_of_ramblers = 1
+var number_of_ramblers int
 
 type VirtualCity struct {
 	nodes      map[int64]Node
@@ -183,6 +177,9 @@ func (vc *VirtualCity) Run(ctx context.Context) error {
 }
 
 func main() {
+	flag.IntVar(&number_of_ramblers, "n", 10, "number of rambler")
+	flag.Parse()
+
 	debug.On()
 	defer func() {
 		if err := recover(); err != nil {
