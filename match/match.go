@@ -90,13 +90,23 @@ func (m *Matcher) match() error {
 		}
 		for _, loc := range locations {
 			//fmt.Printf("location:%#v\n", loc)
+			//fmt.Printf("location:{userID:%v,lat:%v,lon:%v}\n", userID, lat, lon)
+
+			// TODO  GetNotif by UserID && FlyerID not by NotifID
+			// TODO  tile38 does not support scan with geojson properties -> scan all and filtering is VERY SLOW !!
+			// TODO ==> Store the ( FLyerID, UserID )???? -> hashmap
+			// TODO ==> Remove the cache if flyer is invalid --> how to implement ?? gorbage collect?
+			/*
+				if prev, err := db.GetNotification(fmt.Sprintf("%v", n.ID)); err != nil {
+					return err
+				} else if prev == nil && stocked > 0 {
+			*/
 			lat := loc.Geometry.Coordinates[1]
 			lon := loc.Geometry.Coordinates[0]
 			userID := loc.Properties["id"].(float64)
-			//fmt.Printf("location:{userID:%v,lat:%v,lon:%v}\n", userID, lat, lon)
 			now := time.Now().Unix()
 			n := &db.Notification{
-				ID: flyerID*100 + int64(userID), //TODO:
+				//ID: flyerID*100 + int64(userID), //TODO:
 				//ID:           db.NewNotificationID(),
 				FlyerID:      int64(flyerID),
 				UserID:       int64(userID),
@@ -104,18 +114,13 @@ func (m *Matcher) match() error {
 				Lon:          lon,
 				DeliveryTime: now,
 			}
-
-			// TODO  GetNotif by UserID && FlyerID not by NotifID
-			// TODO  VERY SLOW !!
-			// TODO ==> Store the ( FLyerID, UserID )???? -> hashmap
-			// TODO ==> Remove the cache if flyer is invalid --> how to implement ?? gorbage collect?
-			if prev, err := db.GetNotification(fmt.Sprintf("%v", n.ID)); err != nil {
-				return err
-			} else if prev == nil && stocked > 0 {
+			if !n.OnCache() && stocked > 0 {
+				n.ID = db.NewNotificationID()
 				err := n.Set()
 				if err != nil {
 					return err
 				}
+				n.StoreCache()
 
 				stocked--
 				delivered++

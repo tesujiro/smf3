@@ -16,6 +16,17 @@ type Notification struct {
 	DeliveryTime int64
 }
 
+type notifCacheKey struct {
+	FlyerID int64
+	UserID  int64
+}
+
+var notifCache map[notifCacheKey]interface{}
+
+func init() {
+	notifCache = make(map[notifCacheKey]interface{})
+}
+
 var currentNotificationID int64 = 0
 
 func NewNotificationID() int64 {
@@ -69,6 +80,19 @@ func GetNotification(id string) (*Notification, error) {
 
 	return &n, nil
 }
+
+func (n *Notification) OnCache() bool {
+	if _, ok := notifCache[notifCacheKey{n.FlyerID, n.UserID}]; ok {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (n *Notification) StoreCache() {
+	notifCache[notifCacheKey{n.FlyerID, n.UserID}] = nil //interface{}{}
+}
+
 func (n *Notification) Set() error {
 	// Connect Tile38
 	c := pool.Get()
