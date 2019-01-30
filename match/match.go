@@ -101,8 +101,14 @@ func (m *Matcher) match() error {
 					return err
 				} else if prev == nil && stocked > 0 {
 			*/
-			lat := loc.Geometry.Coordinates[1]
-			lon := loc.Geometry.Coordinates[0]
+			c, err := loc.Geometry.GetCoordinatesObject()
+			if err != nil {
+				return err
+			}
+			point, ok := c.(*db.Point)
+			if !ok {
+				return fmt.Errorf("Coordinates conversion error: not point format")
+			}
 			userID := loc.Properties["id"].(float64)
 			now := time.Now().Unix()
 			n := &db.Notification{
@@ -110,8 +116,8 @@ func (m *Matcher) match() error {
 				//ID:           db.NewNotificationID(),
 				FlyerID:      int64(flyerID),
 				UserID:       int64(userID),
-				Lat:          lat,
-				Lon:          lon,
+				Lat:          point[1],
+				Lon:          point[0],
 				DeliveryTime: now,
 			}
 			if !n.OnCache() && stocked > 0 {

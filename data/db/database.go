@@ -24,18 +24,6 @@ func init() {
 	}
 }
 
-type GeoJsonFeature struct {
-	Type       string                 `json:"type,omitempty"`
-	Geometry   *Geometry              `json:"geometry,omitempty"`
-	Properties map[string]interface{} `json:"properties,omitempty"`
-}
-
-type Geometry struct {
-	Type        string      `json:"type"`
-	Coordinates [2]float64  `json:"coordinates,omitempty"`
-	Geometries  []*Geometry `json:"geometries,omitempty"`
-}
-
 func db_connect() (redis.Conn, error) {
 	c, err := redis.Dial("tcp", ":9851")
 	if err != nil {

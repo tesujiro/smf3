@@ -38,8 +38,9 @@ func (n *Notification) geoJson() (string, error) {
 	feature := &GeoJsonFeature{
 		Type: "Feature",
 		Geometry: &Geometry{
-			Type:        "Point",
-			Coordinates: [2]float64{n.Lon, n.Lat},
+			Type: "Point",
+			//Coordinates: [2]float64{n.Lon, n.Lat},
+			Coordinates: []byte(fmt.Sprintf("[%v,%v]", n.Lon, n.Lat)), //TODO: temporary
 		},
 		Properties: map[string]interface{}{
 			"id":           n.ID,

@@ -32,7 +32,7 @@ func (fly *Flyer) geoJson() (string, error) {
 		Type: "Feature",
 		Geometry: &Geometry{
 			Type:        "Point",
-			Coordinates: [2]float64{fly.Lon, fly.Lat},
+			Coordinates: []byte(fmt.Sprintf("[%v,%v]", fly.Lon, fly.Lat)), //TODO: temporary
 		},
 		Properties: map[string]interface{}{
 			"id":          fly.ID,
@@ -120,8 +120,18 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 			log.Fatalf("Unmarshal feature error: %v\n", err)
 			return nil, err
 		}
-		f.Lat = feature.Geometry.Coordinates[1]
-		f.Lon = feature.Geometry.Coordinates[0]
+		c, err := feature.Geometry.GetCoordinatesObject()
+		if err != nil {
+			log.Fatalf("Unmarshal coordinates error: %v\n", err)
+			return nil, err
+		}
+		point, ok := c.(*Point)
+		if !ok {
+			log.Fatalf("Coordinates conversion error: not point  c=%#v\n", c)
+			return nil, err
+		}
+		f.Lat = point[1]
+		f.Lon = point[0]
 		//fmt.Printf("peoperty :%#v\n", f)
 
 		flyers[i] = f

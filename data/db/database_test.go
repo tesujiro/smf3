@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -21,7 +22,7 @@ func TestSetJson(t *testing.T) {
 			Type: "Feature",
 			Geometry: &Geometry{
 				Type:        "Point",
-				Coordinates: [2]float64{1.2345, 100.2003},
+				Coordinates: []byte(fmt.Sprintf("[%v,%v]", 1.2345, 100.2003)),
 			},
 			Properties: map[string]interface{}{
 				"id": "ID",
@@ -31,7 +32,7 @@ func TestSetJson(t *testing.T) {
 			Type: "Feature",
 			Geometry: &Geometry{
 				Type:        "Point",
-				Coordinates: [2]float64{1.2345, 100.2003},
+				Coordinates: []byte(fmt.Sprintf("[%v,%v]", 1.2345, 100.2003)),
 			},
 			Properties: map[string]interface{}{
 				"id":   "ID",
@@ -128,7 +129,7 @@ func TestScan(t *testing.T) {
 			Type: "Feature",
 			Geometry: &Geometry{
 				Type:        "Point",
-				Coordinates: [2]float64{record.lon, record.lat},
+				Coordinates: []byte(fmt.Sprintf("[%v,%v]", record.lon, record.lat)),
 			},
 			Properties: map[string]interface{}{
 				"id":   record.id,
@@ -197,7 +198,7 @@ func TestWithin(t *testing.T) {
 			Type: "Feature",
 			Geometry: &Geometry{
 				Type:        "Point",
-				Coordinates: [2]float64{record.lon, record.lat},
+				Coordinates: []byte(fmt.Sprintf("[%v,%v]", record.lon, record.lat)),
 			},
 			Properties: map[string]interface{}{
 				"id":   record.id,
