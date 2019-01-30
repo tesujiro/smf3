@@ -32,7 +32,7 @@ locationInfo.prototype = {
 			this.userLocs[loc.properties.id]={lat: loc.geometry.coordinates[1], lng:loc.geometry.coordinates[0]};
 			addShape(circle);
 		}
-		console.log("locations:"+locations.length+" userLocs:"+Object.keys(this.userLocs).length);
+		//console.log("locations:"+locations.length+" userLocs:"+Object.keys(this.userLocs).length);
 		//console.log(this.userLocs);
 	},
 	post          : function() {

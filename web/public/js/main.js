@@ -74,8 +74,8 @@ var initMap = function() {
 		var title = String(document.forms.form1.title.value);
 		var distance = Number(document.forms.form1.distance.value);
 		var validPeriod = Number(document.forms.form1.validPeriod.value);
-		console.log("title="+title)
-		console.log("distance="+distance)
+		//console.log("title="+title)
+		//console.log("distance="+distance)
 		flyInfo.post(1 ,validPeriod , lat, lng, title, distance);
 		let circle = new google.maps.Circle({
 			strokeColor: '#FF0000',
