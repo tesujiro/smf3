@@ -93,10 +93,18 @@ func db_retrieve(c redis.Conn, command, key string, args ...interface{}) ([]GeoJ
 	}
 
 	features := []GeoJsonFeature{}
-	if len(ret.([]interface{})[1].([]interface{})) > 0 {
-		features = make([]GeoJsonFeature, len(ret.([]interface{})[1].([]interface{})))
-		for i, value := range ret.([]interface{})[1].([]interface{}) {
-			b := value.([]interface{})[1].([]byte)
+	// ret
+	// ret.([]interface{})[0] : cursor number
+	// ret.([]interface{})[1] : objects
+	objects := ret.([]interface{})[1].([]interface{}) //objects
+	if len(objects) > 0 {
+		features = make([]GeoJsonFeature, len(objects))
+		for i, object := range objects {
+			// object
+			// object.([]interface{})[0]: id ([]byte)
+			// object.([]interface{})[1]: json ([]byte)
+			// object.([]interface{})[2]: field and value pairs ([]interface{}) ex. [ start 123 end 456 ]
+			b := object.([]interface{})[1].([]byte) //json
 			//fmt.Printf("b:%#v\n", string(b))
 			err = json.Unmarshal(b, &features[i])
 			if err != nil {
