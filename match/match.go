@@ -92,15 +92,6 @@ func (m *Matcher) match() error {
 			//fmt.Printf("location:%#v\n", loc)
 			//fmt.Printf("location:{userID:%v,lat:%v,lon:%v}\n", userID, lat, lon)
 
-			// TODO  GetNotif by UserID && FlyerID not by NotifID
-			// TODO  tile38 does not support scan with geojson properties -> scan all and filtering is VERY SLOW !!
-			// TODO ==> Store the ( FLyerID, UserID )???? -> hashmap
-			// TODO ==> Remove the cache if flyer is invalid --> how to implement ?? gorbage collect?
-			/*
-				if prev, err := db.GetNotification(fmt.Sprintf("%v", n.ID)); err != nil {
-					return err
-				} else if prev == nil && stocked > 0 {
-			*/
 			c, err := loc.Geometry.GetCoordinatesObject()
 			if err != nil {
 				return err
@@ -112,8 +103,6 @@ func (m *Matcher) match() error {
 			userID := loc.Properties["id"].(float64)
 			now := time.Now().Unix()
 			n := &db.Notification{
-				//ID: flyerID*100 + int64(userID), //TODO:
-				//ID:           db.NewNotificationID(),
 				FlyerID:      int64(flyerID),
 				UserID:       int64(userID),
 				Lat:          point[1],

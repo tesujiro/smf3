@@ -32,7 +32,7 @@ func (fly *Flyer) geoJson() (string, error) {
 		Type: "Feature",
 		Geometry: &Geometry{
 			Type:        "Point",
-			Coordinates: []byte(fmt.Sprintf("[%v,%v]", fly.Lon, fly.Lat)), //TODO: temporary
+			Coordinates: []byte(fmt.Sprintf("[%v,%v]", fly.Lon, fly.Lat)),
 		},
 		Properties: map[string]interface{}{
 			"id":          fly.ID,

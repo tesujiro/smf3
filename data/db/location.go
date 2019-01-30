@@ -25,7 +25,7 @@ func (loc *Location) geoJson() (string, error) {
 		Type: "Feature",
 		Geometry: &Geometry{
 			Type:        "Point",
-			Coordinates: []byte(fmt.Sprintf("[%v,%v]", loc.Lon, loc.Lat)), //TODO: temporary
+			Coordinates: []byte(fmt.Sprintf("[%v,%v]", loc.Lon, loc.Lat)),
 		},
 		Properties: map[string]interface{}{
 			"id":   loc.ID,

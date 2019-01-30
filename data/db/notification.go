@@ -40,7 +40,7 @@ func (n *Notification) geoJson() (string, error) {
 		Geometry: &Geometry{
 			Type: "Point",
 			//Coordinates: [2]float64{n.Lon, n.Lat},
-			Coordinates: []byte(fmt.Sprintf("[%v,%v]", n.Lon, n.Lat)), //TODO: temporary
+			Coordinates: []byte(fmt.Sprintf("[%v,%v]", n.Lon, n.Lat)),
 		},
 		Properties: map[string]interface{}{
 			"id":           n.ID,
@@ -89,6 +89,9 @@ func (n *Notification) OnCache() bool {
 		return false
 	}
 }
+
+// TODO: Cache Garbage Collection
+// remove cache about invalid flyerid
 
 func (n *Notification) StoreCache() {
 	notifCache[notifCacheKey{n.FlyerID, n.UserID}] = nil //interface{}{}
