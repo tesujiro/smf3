@@ -75,30 +75,41 @@ func db_del(c redis.Conn, key, id string) error {
 func db_retrieve(c redis.Conn, command, key string, args ...interface{}) ([]GeoJsonFeature, error) {
 	func_args := append([]interface{}{key}, args...)
 	//fmt.Printf("db_retrieve: func_args(%#v)\n", func_args)
-	ret, err := c.Do(command, func_args...)
+	results, err := redis.Values(c.Do(command, func_args...))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Could not SCAN: %v", err)
 	}
 
-	features := []GeoJsonFeature{}
-	// ret
-	// ret.([]interface{})[0] : cursor number
-	// ret.([]interface{})[1] : objects
-	objects := ret.([]interface{})[1].([]interface{}) //objects
-	if len(objects) > 0 {
-		features = make([]GeoJsonFeature, len(objects))
-		for i, object := range objects {
-			// object
-			// object.([]interface{})[0]: id ([]byte)
-			// object.([]interface{})[1]: json ([]byte)
-			// object.([]interface{})[2]: field and value pairs ([]interface{}) ex. [ start 123 end 456 ]
-			b := object.([]interface{})[1].([]byte) //json
-			//fmt.Printf("b:%#v\n", string(b))
-			err = json.Unmarshal(b, &features[i])
-			if err != nil {
-				return nil, err
-			}
+	var cursor int
+	var members []interface{}
+	_, err = redis.Scan(results, &cursor, &members)
+	if err != nil {
+		return nil, fmt.Errorf("scan result error: %v", err)
+	}
+
+	features := make([]GeoJsonFeature, len(members))
+	i := 0
+	for len(members) > 0 {
+		// pick up one record from results as []interface{}
+		var object []interface{}
+		members, err = redis.Scan(members, &object)
+		if err != nil {
+			return nil, fmt.Errorf("scan record error: %v", err)
 		}
+		// scan columns from one record -> [id,json],fields
+		var id []byte
+		var geojson []byte
+		_, err := redis.Scan(object, &id, &geojson)
+		if err != nil {
+			return nil, fmt.Errorf("scan columns error: %v", err)
+		}
+
+		// unmarshal geojson string to struct
+		err = json.Unmarshal(geojson, &features[i])
+		if err != nil {
+			return nil, fmt.Errorf("unmarshal json error: %v", err)
+		}
+		i++
 	}
 
 	return features, nil
