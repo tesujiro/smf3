@@ -55,17 +55,78 @@ func (fly *Flyer) geoJson() (string, error) {
 	return string(json), nil
 }
 
+func geoJson2Flyer(feature GeoJsonFeature) (*Flyer, error) {
+	pj, err := json.Marshal(feature.Properties)
+	if err != nil {
+		log.Fatalf("Marshal feature error: %v\n", err)
+		return nil, err
+	}
+	//fmt.Printf("property json:%s\n", pj)
+
+	var f Flyer
+	err = json.Unmarshal(pj, &f)
+	if err != nil {
+		log.Fatalf("Unmarshal feature error: %v\n", err)
+		return nil, err
+	}
+	c, err := feature.Geometry.GetCoordinatesObject()
+	if err != nil {
+		log.Fatalf("Unmarshal coordinates error: %v\n", err)
+		return nil, err
+	}
+	point, ok := c.(*Point)
+	if !ok {
+		log.Fatalf("Coordinates conversion error: not point  c=%#v\n", c)
+		return nil, err
+	}
+	f.Lat = point[1]
+	f.Lon = point[0]
+
+	return &f, nil
+}
+
+func GetFlyer(id string) (*Flyer, error) {
+	c := pool.Get()
+	defer c.Close()
+
+	//id_num, _ := strconv.ParseInt(id, 10, 64)
+	//b, err := db_get(c, "flyer", id_num)
+	b, err := db_get(c, "flyer", id)
+	if err != nil {
+		log.Fatalf("GET DB error: %v\n", err)
+		return nil, err
+	}
+	if b == nil {
+		log.Printf("GET flyer not found\n")
+		return nil, nil
+	}
+
+	var feature GeoJsonFeature
+	err = json.Unmarshal(b, &feature)
+	if err != nil {
+		log.Fatalf("Unmarshal error: %v\n", err)
+		return nil, err
+	}
+	f, err := geoJson2Flyer(feature)
+	if err != nil {
+		log.Fatalf("geoJson2Flyer error: %v\n", err)
+		return nil, err
+	}
+
+	return f, nil
+}
+
 func (fly *Flyer) Set() error {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
 
 	if json, err := fly.geoJson(); err != nil {
-		fmt.Printf("flyer.geoJson() error: %v\n", err)
+		log.Printf("flyer.geoJson() error: %v\n", err)
 		return err
 	} else {
 		//fmt.Printf("GeoJSON:%v\n", json)
-		err = db_set_json(c, "flyer", fmt.Sprintf("%v", fly.ID), json, "FIELD", "start", fly.StartAt, "FIELD", "end", fly.EndAt)
+		err = db_set_json(c, "flyer", fmt.Sprintf("%v", fly.ID), json, "FIELD", "start", fly.StartAt, "FIELD", "end", fly.EndAt, "EX", fly.ValidPeriod)
 		if err != nil {
 			log.Fatalf("SET DB error: %v\n", err)
 			return err
@@ -90,6 +151,21 @@ func (fly *Flyer) Jset(path string, value interface{}) error {
 	return nil
 }
 
+func (fly *Flyer) Sethook(endpoint string) error {
+	c := pool.Get()
+	defer c.Close()
+
+	//fmt.Printf("GeoJSON:%v\n", json)
+	hookname := fmt.Sprintf("flyerhook:%v", fly.ID)
+	err := db_sethook(c, hookname, endpoint, "EX", fly.ValidPeriod, "NEARBY", "location", "FENCE", "DETECT", "enter", "POINT", fly.Lat, fly.Lon, fly.Distance)
+	if err != nil {
+		log.Fatalf("SETHOOK DB error: %v\n", err)
+		return err
+	}
+
+	return nil
+}
+
 func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	// Connect Tile38
 	c := pool.Get()
@@ -107,6 +183,7 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	for i, feature := range ret {
 		//fmt.Printf("feature:%#v\n", feature)
 
+		// TODO: call geoJson2Flyer(feature GeoJsonFeature)
 		pj, err := json.Marshal(feature.Properties)
 		if err != nil {
 			log.Fatalf("Marshal feature error: %v\n", err)
@@ -163,6 +240,11 @@ func DropFlyer() error {
 	err := db_drop(c, "flyer")
 	if err != nil {
 		log.Fatalf("DB DROP error: %v\n", err)
+		return err
+	}
+	err = db_pdelhook(c, "flyerhook:*")
+	if err != nil {
+		log.Fatalf("DB PDELHOOK error: %v\n", err)
 		return err
 	}
 	return nil
