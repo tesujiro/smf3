@@ -135,6 +135,17 @@ func db_withinCircle(c redis.Conn, key string, lat, lon, meters float64, args ..
 
 func db_drop(c redis.Conn, key string) error {
 	_, err := c.Do("DROP", key)
-	//fmt.Printf("%s\n", ret)
+	return err
+}
+
+func db_sethook(c redis.Conn, name, endpoint string, args ...interface{}) error {
+	func_args := append([]interface{}{name, endpoint}, args...)
+	//fmt.Printf("db_sethook: func_args(%#v)\n", func_args)
+	_, err := c.Do("SETHOOK", func_args...)
+	return err
+}
+
+func db_pdelhook(c redis.Conn, pattern string) error {
+	_, err := c.Do("PDELHOOK", pattern)
 	return err
 }

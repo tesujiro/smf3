@@ -45,6 +45,9 @@ func TestAPIFlyers(t *testing.T) {
 		if err := flyer.Set(); err != nil {
 			t.Fatalf("Set Flyer error: (%v) flyer:%v\n", err, flyer)
 		}
+		if err := flyer.Sethook("http://dummy/dummy"); err != nil {
+			t.Fatalf("Set Flyer error: (%v) flyer:%v\n", err, flyer)
+		}
 	}
 
 	// TEST
