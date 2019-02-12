@@ -12,7 +12,7 @@ before_install:
   - go get -t -u github.com/tesujiro/smf3/data/db
 
 script:
-  - go test -v -coverprofile=coverage.txt -covermode=count ./data/db
+  - go test -v -coverprofile=coverage.txt -covermode=count ./data/db ./web
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
