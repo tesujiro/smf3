@@ -9,7 +9,7 @@ env:
 before_install:
  #- go get -u github.com/haya14busa/goverage
   - docker run -d -p 9851:9851 tile38/tile38
-  - go get -t -u github.com/tesujiro/smf3/data/db
+  - go get -t -u github.com/tesujiro/smf3
 
 script:
   - go test -v -coverprofile=coverage.txt -covermode=count ./data/db ./web
