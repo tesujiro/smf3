@@ -31,15 +31,6 @@ func main() {
 	db.DropFlyer()
 	db.DropNotification()
 
-	// START MATCHING ENGINE
-	/*
-		matcher := match.NewMatcher(ctx)
-		if err := matcher.Run(ctx); err != nil {
-			fmt.Fprintf(os.Stderr, "Error: %s\n", err)
-			return
-		}
-	*/
-
 	// START WEB SERVER
 	s := newServer()
 	s.routes()
