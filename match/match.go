@@ -110,7 +110,7 @@ func (m *Matcher) match() error {
 				DeliveryTime: now,
 			}
 			if !n.OnCache() && stocked > 0 {
-				n.ID = db.NewNotificationID()
+				//n.ID = db.NewNotificationID()
 				err := n.Set()
 				if err != nil {
 					return err

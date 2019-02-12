@@ -8,7 +8,7 @@ import (
 )
 
 type Notification struct {
-	ID           int64
+	ID           string // flyerID+":"+userID
 	FlyerID      int64
 	UserID       int64
 	Lat          float64
@@ -27,12 +27,14 @@ func init() {
 	notifCache = make(map[notifCacheKey]interface{})
 }
 
+/*
 var currentNotificationID int64 = 0
 
 func NewNotificationID() int64 {
 	currentNotificationID++
 	return currentNotificationID
 }
+*/
 
 func (n *Notification) geoJson() (string, error) {
 	feature := &GeoJsonFeature{
@@ -58,7 +60,7 @@ func (n *Notification) geoJson() (string, error) {
 	return string(json), nil
 }
 
-func GetNotification(id string) (*Notification, error) {
+func ExistNotification(id string) (bool, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
@@ -66,20 +68,13 @@ func GetNotification(id string) (*Notification, error) {
 	b, err := db_get(c, "notification", id)
 	if err != nil {
 		log.Fatalf("GET DB error: %v\n", err)
-		return nil, err
+		return false, err
 	}
 	if b == nil {
-		return nil, nil
+		return false, nil
 	}
+	return true, nil
 
-	var n Notification
-	err = json.Unmarshal(b, &n)
-	if err != nil {
-		log.Fatalf("Unmarshal error: %v\n", err)
-		return nil, err
-	}
-
-	return &n, nil
 }
 
 func (n *Notification) OnCache() bool {
@@ -131,6 +126,7 @@ func NotificationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 		return nil, err
 	}
 	//fmt.Printf("%s\n", ret)
+	fmt.Printf("NotificationWithinBounds: %v\n", len(ret))
 
 	return ret, nil
 }

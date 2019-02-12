@@ -32,11 +32,13 @@ func main() {
 	db.DropNotification()
 
 	// START MATCHING ENGINE
-	matcher := match.NewMatcher(ctx)
-	if err := matcher.Run(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "Error: %s\n", err)
-		return
-	}
+	/*
+		matcher := match.NewMatcher(ctx)
+		if err := matcher.Run(ctx); err != nil {
+			fmt.Fprintf(os.Stderr, "Error: %s\n", err)
+			return
+		}
+	*/
 
 	// START WEB SERVER
 	s := newServer()
@@ -56,6 +58,8 @@ func (s *server) routes() {
 	s.router.HandleFunc("/api/flyers", s.handleFlyers())
 	//s.router.HandleFunc("/api/flyers/", s.handleSingleFlyer())
 	s.router.HandleFunc("/api/notifications", s.handleNotifications())
+	// Webhook
+	s.router.HandleFunc("/hook/notification", match.CreateNotification)
 	//s.router.HandleFunc("/api/notifications/", s.handleSingleNotifs())
 	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/public"))))
 }

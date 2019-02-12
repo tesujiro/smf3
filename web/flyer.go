@@ -126,13 +126,24 @@ func (s *server) handlePostFlyers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("flyer:%v\n", flyer)
+	//fmt.Printf("flyer:%v\n", flyer)
 	now := time.Now().Unix()
 	flyer.ID = db.NewFlyerID()
 	flyer.StartAt = now
 	flyer.EndAt = now + flyer.ValidPeriod
 	if err := flyer.Set(); err != nil {
 		log.Printf("Set Flyer error: (%v) flyer:%v\n", err, flyer)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	if err := flyer.Set(); err != nil {
+		log.Printf("Set Flyer error: (%v) flyer:%v\n", err, flyer)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	endpoint := "http://localhost:8000/hook/notification"
+	if err := flyer.Sethook(endpoint); err != nil {
+		log.Printf("Sethook Flyer error: (%v) flyer:%v\n", err, flyer)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
