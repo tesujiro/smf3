@@ -2,6 +2,11 @@ test:
 	go vet ./...
 	go test -v ./data/db ./web
 
+.PHONY: cover
+cover:
+	go vet ./...
+	go test -v ./data/db ./web -coverpkg ./... -coverprofile=cover.out && go tool cover -html=cover.out -o cover.html
+
 restart:
 	kill -9 `ps -ef | grep tile38 | grep -v grep |awk '{print $$2}'` && tile38-server &
 
