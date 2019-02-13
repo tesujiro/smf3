@@ -21,12 +21,6 @@ type notifCacheKey struct {
 	UserID  int64
 }
 
-var notifCache map[notifCacheKey]interface{}
-
-func init() {
-	notifCache = make(map[notifCacheKey]interface{})
-}
-
 /*
 var currentNotificationID int64 = 0
 
@@ -75,21 +69,6 @@ func ExistNotification(id string) (bool, error) {
 	}
 	return true, nil
 
-}
-
-func (n *Notification) OnCache() bool {
-	if _, ok := notifCache[notifCacheKey{n.FlyerID, n.UserID}]; ok {
-		return true
-	} else {
-		return false
-	}
-}
-
-// TODO: Cache Garbage Collection
-// remove cache about invalid flyerid
-
-func (n *Notification) StoreCache() {
-	notifCache[notifCacheKey{n.FlyerID, n.UserID}] = nil //interface{}{}
 }
 
 func (n *Notification) Set() error {

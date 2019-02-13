@@ -126,7 +126,6 @@ func CreateNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("Set notification: %#v\n", n)
-	//n.StoreCache()
 
 	flyer.Stocked--
 	flyer.Delivered++
