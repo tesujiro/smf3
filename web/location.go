@@ -89,5 +89,6 @@ func (s *server) handleGetLocations(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *server) handlePostLocations(w http.ResponseWriter, r *http.Request) {
+	//TODO
 	return
 }

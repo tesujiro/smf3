@@ -1,4 +1,4 @@
-package match
+package main
 
 import (
 	"encoding/json"
@@ -13,6 +13,20 @@ import (
 	"github.com/tesujiro/smf3/data/db"
 )
 
+func (s *server) hookNotifications() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost, http.MethodGet: // Only Get??:w
+			s.createNotification(w, r)
+			return
+		default:
+			log.Printf("Http method error. Not Post nor Get : %v\n", r.Method)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 type WebhookRequest struct {
 	Command string          `json:"command"`
 	Group   string          `json:"group"`
@@ -24,7 +38,7 @@ type WebhookRequest struct {
 	Object  json.RawMessage `json:"object"`
 }
 
-func CreateNotification(w http.ResponseWriter, r *http.Request) {
+func (s *server) createNotification(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received Webhook request!\n")
 
 	length, err := strconv.Atoi(r.Header.Get("Content-Length"))

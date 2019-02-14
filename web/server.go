@@ -10,7 +10,6 @@ import (
 	"os"
 
 	"github.com/tesujiro/smf3/data/db"
-	"github.com/tesujiro/smf3/match"
 )
 
 type server struct {
@@ -50,7 +49,7 @@ func (s *server) routes() {
 	//s.router.HandleFunc("/api/flyers/", s.handleSingleFlyer())
 	s.router.HandleFunc("/api/notifications", s.handleNotifications())
 	// Webhook
-	s.router.HandleFunc("/hook/notification", match.CreateNotification)
+	s.router.HandleFunc("/hook/notification", s.hookNotifications())
 	//s.router.HandleFunc("/api/notifications/", s.handleSingleNotifs())
 	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/public"))))
 }
