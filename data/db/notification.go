@@ -91,7 +91,7 @@ func (n *Notification) Set() error {
 	return nil
 }
 
-func NotificationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
+func NotificationFeaturesWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
@@ -105,7 +105,7 @@ func NotificationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 		return nil, err
 	}
 	//fmt.Printf("%s\n", ret)
-	fmt.Printf("NotificationWithinBounds: %v\n", len(ret))
+	fmt.Printf("NotificationFeaturesWithinBounds: %v\n", len(ret))
 
 	return ret, nil
 }

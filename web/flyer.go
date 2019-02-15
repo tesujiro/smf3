@@ -81,7 +81,7 @@ func (s *server) handleGetFlyers(w http.ResponseWriter, r *http.Request) {
 	var flyerJson []byte
 	var err error
 	now := time.Now().Unix()
-	flyers, err = db.FlyerWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"], "WHERE", "start", "-inf", now, "WHERE", "end", now, "+inf")
+	flyers, err = db.FlyerFeaturesWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"], "WHERE", "start", "-inf", now, "WHERE", "end", now, "+inf")
 	if err != nil {
 		log.Printf("WithiLocation error: %v\n", err)
 		return

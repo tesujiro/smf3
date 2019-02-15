@@ -55,7 +55,7 @@ func (fly *Flyer) geoJson() (string, error) {
 	return string(json), nil
 }
 
-func geoJson2Flyer(feature GeoJsonFeature) (*Flyer, error) {
+func FlyerFromFeature(feature GeoJsonFeature) (*Flyer, error) {
 	pj, err := json.Marshal(feature.Properties)
 	if err != nil {
 		log.Fatalf("Marshal feature error: %v\n", err)
@@ -107,9 +107,9 @@ func GetFlyer(id string) (*Flyer, error) {
 		log.Fatalf("Unmarshal error: %v\n", err)
 		return nil, err
 	}
-	f, err := geoJson2Flyer(feature)
+	f, err := FlyerFromFeature(feature)
 	if err != nil {
-		log.Fatalf("geoJson2Flyer error: %v\n", err)
+		log.Fatalf("FlyerFromFeature error: %v\n", err)
 		return nil, err
 	}
 
@@ -183,7 +183,7 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	for i, feature := range ret {
 		//fmt.Printf("feature:%#v\n", feature)
 
-		// TODO: call geoJson2Flyer(feature GeoJsonFeature)
+		// TODO: call FlyerFromFeature(feature GeoJsonFeature)
 		pj, err := json.Marshal(feature.Properties)
 		if err != nil {
 			log.Fatalf("Marshal feature error: %v\n", err)
@@ -217,7 +217,7 @@ func ScanValidFlyers(currentTime int64) ([]Flyer, error) {
 	return flyers, nil
 }
 
-func FlyerWithinBounds(s, w, n, e float64, args ...interface{}) ([]GeoJsonFeature, error) {
+func FlyerFeaturesWithinBounds(s, w, n, e float64, args ...interface{}) ([]GeoJsonFeature, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()

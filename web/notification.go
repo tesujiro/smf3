@@ -53,7 +53,7 @@ func (s *server) handleGetNotifications(w http.ResponseWriter, r *http.Request) 
 	var notifications []db.GeoJsonFeature
 	var notificationJson []byte
 	var err error
-	notifications, err = db.NotificationWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+	notifications, err = db.NotificationFeaturesWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
 	if err != nil {
 		log.Printf("WithiLocation error: %v\n", err)
 		return
