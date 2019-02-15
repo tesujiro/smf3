@@ -141,6 +141,24 @@ func (s *server) handlePostFlyers(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+
+	// Notify all locations whithin the flyer
+	locations, err := db.LocationsWithinCircle(flyer.Lat, flyer.Lon, flyer.Distance)
+	if err != nil {
+		log.Printf("Get Locations within circle error: (%v) flyer:%v\n", err, flyer)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	for _, loc := range locations {
+		err := s.CreateNotification(flyer, loc)
+		if err != nil {
+			log.Printf("Create Notification error: (%v) flyer:%v\n", err, flyer)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	// Webhook
 	endpoint := "http://localhost:8000/hook/notification"
 	if err := flyer.Sethook(endpoint); err != nil {
 		log.Printf("Sethook Flyer error: (%v) flyer:%v\n", err, flyer)

@@ -20,6 +20,25 @@ func NewLocationID() int64 {
 	return currentLocationID
 }
 
+func LocationFromFeature(feature GeoJsonFeature) (*Location, error) {
+	c, err := feature.Geometry.GetCoordinatesObject()
+	if err != nil {
+		return nil, fmt.Errorf("Geometry conversion error: %s geometry(%s)\n", err, feature.Geometry)
+	}
+	point, ok := c.(*Point)
+	if !ok {
+		return nil, fmt.Errorf("Coordinates conversion error: not point format:%s\n", feature.Geometry)
+	}
+
+	loc := Location{
+		ID:   int64(feature.Properties["id"].(float64)),
+		Lat:  point[1],
+		Lon:  point[0],
+		Time: int64(feature.Properties["time"].(float64)),
+	}
+	return &loc, nil
+}
+
 func (loc *Location) geoJson() (string, error) {
 	feature := &GeoJsonFeature{
 		Type: "Feature",
@@ -68,8 +87,7 @@ func (loc *Location) Set() error {
 	return nil
 }
 
-func LocationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
-	// Connect Tile38
+func LocationFeaturesWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 	c := pool.Get()
 	defer c.Close()
 
@@ -79,23 +97,30 @@ func LocationWithinBounds(s, w, n, e float64) ([]GeoJsonFeature, error) {
 		return nil, err
 	}
 	//fmt.Printf("%s\n", ret)
-
 	return ret, nil
 }
 
-func LocationWithinCircle(lat, lon, meter float64, args ...interface{}) ([]GeoJsonFeature, error) {
+func LocationsWithinCircle(lat, lon, meter float64, args ...interface{}) ([]Location, error) {
 	// Connect Tile38
 	c := pool.Get()
 	defer c.Close()
 
-	ret, err := db_withinCircle(c, "location", lat, lon, meter, args...)
+	features, err := db_withinCircle(c, "location", lat, lon, meter, args...)
 	if err != nil {
 		log.Fatalf("DB WITHIN error: %v\n", err)
 		return nil, err
 	}
 	//fmt.Printf("%s\n", ret)
 
-	return ret, nil
+	locs := make([]Location, len(features))
+	for i, feature := range features {
+		loc, err := LocationFromFeature(feature)
+		if err != nil {
+			return nil, err
+		}
+		locs[i] = *loc
+	}
+	return locs, nil
 }
 
 func DropLocation() error {

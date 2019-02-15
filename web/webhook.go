@@ -16,8 +16,8 @@ import (
 func (s *server) hookNotifications() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case http.MethodPost, http.MethodGet: // Only Get??:w
-			s.createNotification(w, r)
+		case http.MethodPost, http.MethodGet: // Only Get??
+			s.hookNotification(w, r)
 			return
 		default:
 			log.Printf("Http method error. Not Post nor Get : %v\n", r.Method)
@@ -38,7 +38,7 @@ type WebhookRequest struct {
 	Object  json.RawMessage `json:"object"`
 }
 
-func (s *server) createNotification(w http.ResponseWriter, r *http.Request) {
+func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Received Webhook request!\n")
 
 	length, err := strconv.Atoi(r.Header.Get("Content-Length"))
@@ -92,52 +92,48 @@ func (s *server) createNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	c, err := feature.Geometry.GetCoordinatesObject()
+	loc, err := db.LocationFromFeature(feature)
 	if err != nil {
-		log.Printf("Geometry conversion error: %s geometry(%s)\n", err, feature.Geometry)
+		log.Printf("GeoJsonFeatue conversion error: %s feature(%s)\n", err, feature)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	point, ok := c.(*db.Point)
-	if !ok {
-		log.Printf("Coordinates conversion error: not point format:%s\n", feature.Geometry)
+	err = s.CreateNotification(*flyer, *loc)
+	if err != nil {
+		log.Printf("Create notification error: %s geometry(%s)\n", err, feature.Geometry)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	userID := int64(feature.Properties["id"].(float64))
+	log.Printf("webhook finished normally.\n")
+}
+
+func (s *server) CreateNotification(flyer db.Flyer, loc db.Location) error {
 	now := time.Now().Unix()
 	n := &db.Notification{
-		ID:           fmt.Sprintf("%d:%d", flyer.ID, userID),
+		ID:           fmt.Sprintf("%d:%d", flyer.ID, loc.ID),
 		FlyerID:      int64(flyer.ID),
-		UserID:       int64(userID),
-		Lat:          point[1],
-		Lon:          point[0],
+		UserID:       int64(loc.ID),
+		Lat:          loc.Lat,
+		Lon:          loc.Lon,
 		DeliveryTime: now,
 	}
 
 	// check notification exists
 	if exist, err := db.ExistNotification(n.ID); err != nil {
-		log.Printf("DB get notification error: %s\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return fmt.Errorf("DB get notification error: %s\n", err)
 	} else if exist {
-		log.Printf("notification already exists. ID:%v\n", n.ID)
-		w.WriteHeader(http.StatusOK)
-		return
+		return fmt.Errorf("notification already exists. ID:%v\n", n.ID)
 	}
 
 	// check stock
 	if flyer.Stocked <= 0 {
 		log.Printf("No flyer stock.\n")
-		w.WriteHeader(http.StatusOK)
-		return
+		return nil
 	}
 
-	err = n.Set()
+	err := n.Set()
 	if err != nil {
-		log.Printf("DB set notification error: %s\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return fmt.Errorf("DB set notification error: %s\n", err)
 	}
 	log.Printf("Set notification: %#v\n", n)
 
@@ -145,15 +141,11 @@ func (s *server) createNotification(w http.ResponseWriter, r *http.Request) {
 	flyer.Delivered++
 	err = flyer.Jset("properties.stocked", flyer.Stocked)
 	if err != nil {
-		log.Printf("DB set flyer stocked error: %s\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return fmt.Errorf("DB set flyer stocked error: %s\n", err)
 	}
 	err = flyer.Jset("properties.delivered", flyer.Delivered)
 	if err != nil {
-		log.Printf("DB set flyer delivered error: %s\n", err)
-		w.WriteHeader(http.StatusInternalServerError)
-		return
+		return fmt.Errorf("DB set flyer delivered error: %s\n", err)
 	}
-	log.Printf("webhook finished normally.\n")
+	return nil
 }

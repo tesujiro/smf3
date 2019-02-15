@@ -71,7 +71,7 @@ func (s *server) handleGetLocations(w http.ResponseWriter, r *http.Request) {
 	var locations []db.GeoJsonFeature
 	var locationJson []byte
 	var err error
-	locations, err = db.LocationWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
+	locations, err = db.LocationFeaturesWithinBounds(bounds["south"], bounds["west"], bounds["north"], bounds["east"])
 	if err != nil {
 		log.Printf("WithiLocation error: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
