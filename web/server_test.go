@@ -3,12 +3,17 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
 func TestServer(t *testing.T) {
+	// No log
+	log.SetOutput(ioutil.Discard)
+
 	tests := []struct {
 		method string
 		url    string
@@ -48,4 +53,5 @@ func TestServer(t *testing.T) {
 			t.Errorf("method:%v url:%v Data Error. [%v]", test.method, test.url, string(data))
 		}
 	}
+	log.SetOutput(os.Stdout)
 }

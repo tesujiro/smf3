@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -14,6 +16,9 @@ import (
 )
 
 func TestAPIFlyers(t *testing.T) {
+	// No log
+	log.SetOutput(ioutil.Discard)
+
 	now := time.Now().Unix()
 	flyers := []*db.Flyer{
 		&db.Flyer{OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
@@ -36,6 +41,7 @@ func TestAPIFlyers(t *testing.T) {
 		{method: "GET", url: "/api/flyers", bounds: map[string]string{"xxx": "0"}, status: 500},
 		{method: "GET", url: "/api/flyers", bounds: map[string]string{"south": "0", "west": "0", "north": "0", "east": "xxx"}, status: 500},
 		{method: "GET", url: "/api/flyers", bounds: map[string]string{"south": "0", "west": "0", "north": "0"}, status: 500},
+		{method: "GET", url: "/api/flyers", bounds: map[string]string{"south": "1", "SOUTH": "1", "west": "0", "north": "1", "EAST": "1"}, status: 500},
 		{method: "POST", url: "/api/flyers", flyer: flyers[2], expectedLength: 3},
 	}
 
@@ -120,4 +126,5 @@ func TestAPIFlyers(t *testing.T) {
 
 	//DELETE TEST DATA
 	db.DropFlyer()
+	log.SetOutput(os.Stdout)
 }

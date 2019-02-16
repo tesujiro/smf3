@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 	"time"
 
@@ -14,6 +16,9 @@ import (
 )
 
 func TestAPILocations(t *testing.T) {
+	// No log
+	log.SetOutput(ioutil.Discard)
+
 	now := time.Now().Unix()
 	locations := []*db.Location{
 		&db.Location{Lat: 0, Lon: 0, Time: now},
@@ -37,6 +42,7 @@ func TestAPILocations(t *testing.T) {
 		{method: "GET", url: "/api/locations", bounds: map[string]string{"xxx": "0"}, status: 500},
 		{method: "GET", url: "/api/locations", bounds: map[string]string{"south": "0", "west": "0", "north": "0", "east": "xxx"}, status: 500},
 		{method: "GET", url: "/api/locations", bounds: map[string]string{"south": "0", "west": "0", "north": "0"}, status: 500},
+		{method: "GET", url: "/api/locations", bounds: map[string]string{"south": "1", "SOUTH": "1", "west": "0", "north": "1", "EAST": "1"}, status: 500},
 		{method: "POST", url: "/api/locations", location: locations[2], expectedLength: 3},
 	}
 
@@ -120,4 +126,5 @@ func TestAPILocations(t *testing.T) {
 
 	//DELETE TEST DATA
 	db.DropLocation()
+	log.SetOutput(os.Stdout)
 }

@@ -16,20 +16,6 @@ type Notification struct {
 	DeliveryTime int64
 }
 
-type notifCacheKey struct {
-	FlyerID int64
-	UserID  int64
-}
-
-/*
-var currentNotificationID int64 = 0
-
-func NewNotificationID() int64 {
-	currentNotificationID++
-	return currentNotificationID
-}
-*/
-
 func (n *Notification) geoJson() (string, error) {
 	feature := &GeoJsonFeature{
 		Type: "Feature",

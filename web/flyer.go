@@ -33,6 +33,7 @@ func (s *server) handleFlyers() http.HandlerFunc {
 func (s *server) handleGetFlyers(w http.ResponseWriter, r *http.Request) {
 	bounds := make(map[string]float64)
 	query := r.URL.Query()
+	//TODO: refact query string check
 	for k, v := range query {
 		//fmt.Printf("Query %v:%v\n", k, v)
 		k = strings.ToLower(k)
@@ -46,6 +47,11 @@ func (s *server) handleGetFlyers(w http.ResponseWriter, r *http.Request) {
 			f, err := strconv.ParseFloat(v[0], 64)
 			if err != nil {
 				log.Printf("Query parameter conversion error: %v\n", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			if _, ok := bounds[k]; ok {
+				log.Printf("Query parameter conversion error: %v duplicate key\n", k)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
