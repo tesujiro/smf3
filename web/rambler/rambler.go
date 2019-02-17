@@ -44,7 +44,7 @@ func newRambler(ID int64, lat, lon float64, nodeID, wayID int64) *rambler {
 }
 
 func (r *rambler) walk(ctx context.Context, nodes map[int64]Node, ways map[int64]Way, node2way map[int64][]int64) {
-	tick := time.NewTicker(time.Millisecond * time.Duration(1000)).C
+	tick := time.NewTicker(time.Millisecond * time.Duration(500)).C
 loop:
 	for {
 		select {
@@ -55,6 +55,7 @@ loop:
 				for i, nid := range ways[wayID].NodeIDs {
 					if nid == nodeID {
 						return len(ways[wayID].NodeIDs) - i - 1
+						//return len(ways[wayID].NodeIDs) - i - 2 // avoid short loop
 					}
 				}
 				return 0
@@ -75,14 +76,10 @@ loop:
 				}
 			}
 			anotherWayID := func() int64 {
-				/*
-					ways := node2way[r.curNodeID]
-					return ways[rand.Intn(len(ways))]
-				*/
 				if len(node2way[r.curNodeID]) < 2 {
 					return r.curWayID
 				}
-				debug.Printf("take another way\n")
+				//debug.Printf("take another way\n")
 				others := []int64{}
 				for _, wayID := range node2way[r.curNodeID] {
 					//if wayID != r.curWayID && wayID != r.prevWayID {
@@ -90,14 +87,31 @@ loop:
 						others = append(others, wayID)
 					}
 				}
-				if len(others) == 0 {
+				switch len(others) {
+				case 0:
 					debug.Printf("take another way --> failed\n")
 					return r.curWayID
-				} else {
-					return others[rand.Intn(len(others))]
+				case 1:
+					if rand.Intn(10) == 0 { // avoid loop
+						return r.curWayID
+					} else {
+						return others[0]
+					}
+				default:
+					way := others[rand.Intn(len(others))]
+					debug.Printf("take way current:%v next:%v ways:%v change:%v\n", r.curWayID, way, len(others), r.curWayID != way)
+					return way
 				}
 				/*
-				 */
+					if len(others) == 0 {
+						debug.Printf("take another way --> failed\n")
+						return r.curWayID
+					} else {
+						way := others[rand.Intn(len(others))]
+						debug.Printf("take way current:%v next:%v ways:%v change:%v\n", r.curWayID, way, len(others), r.curWayID != way)
+						return way
+					}
+				*/
 			}
 			randomNodeID := func() int64 {
 				for _, node := range nodes {
@@ -105,11 +119,19 @@ loop:
 				}
 				return 0
 			}
+			uniqNodes := func(nodes []int64) []int64 {
+				uniq := make([]int64, 0, len(nodes))
+				encountered := map[int64]bool{}
+				for i := 0; i < len(nodes); i++ {
+					if !encountered[nodes[i]] {
+						uniq = append(uniq, nodes[i])
+						encountered[nodes[i]] = true
+					}
+				}
+				return uniq
+			}
 			var nextNodeID int64
 
-			/*
-				_ = anotherWayID()
-			*/
 			// TODO: if other way exist , change current way.
 			nextWayID := anotherWayID()
 			r.prevWayID = r.curWayID
@@ -123,7 +145,7 @@ loop:
 
 			var nodeIDs []int64
 			if !r.backward {
-				nodeIDs = ways[r.curWayID].NodeIDs
+				nodeIDs = uniqNodes(ways[r.curWayID].NodeIDs)
 			} else {
 				reverse := func(a []int64) (opp []int64) {
 					for i := len(a)/2 - 1; i >= 0; i-- {
@@ -132,12 +154,12 @@ loop:
 					}
 					return opp
 				}
-				nodeIDs = reverse(ways[r.curWayID].NodeIDs)
+				nodeIDs = uniqNodes(reverse(ways[r.curWayID].NodeIDs))
 				//_ = reverse(ways[r.curWayID].NodeIDs)
 				//nodeIDs = ways[r.curWayID].NodeIDs
 			}
-			if nextNodeID = nextTo(nodeIDs, r.curNodeID, false); nextNodeID == 0 {
-				//if nextNodeID = nextTo(way.NodeIDs, r.curNodeID, false); nextNodeID == 0 {
+			//if nextNodeID = nextTo(nodeIDs, r.curNodeID, false); nextNodeID == 0 || rand.Intn(500) == 0 { // random once in 500 steps
+			if nextNodeID = nextTo(nodeIDs, r.curNodeID, false); nextNodeID == 0 { // random once in 500 steps
 				debug.Printf("stop point: --> random \n")
 				debug.Printf("curNode(ID:%v) curWay(ID:%v):%v\n", r.curNodeID, r.curWayID, ways[r.curWayID].NodeIDs)
 				nextNodeID = randomNodeID()
