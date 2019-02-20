@@ -77,7 +77,7 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if flyer == nil {
-		log.Printf("Flyer not found: flyer id.:%s\n", flyerID)
+		log.Printf("Flyer not found: flyer id:%s\n", flyerID)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -85,12 +85,14 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 
 	// GeoJson
 	var feature db.GeoJsonFeature
+	//fmt.Printf("Object=%s\n", wr.Object)
 	err = json.Unmarshal(wr.Object, &feature)
 	if err != nil {
 		log.Printf("Webhook request GeoJsonFeature unmarshal error :%s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	fmt.Printf("feature=%#v\n", feature)
 
 	loc, err := db.LocationFromFeature(feature)
 	if err != nil {
