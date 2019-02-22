@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -51,7 +50,7 @@ func (s *server) routes() {
 	// Webhook
 	s.router.HandleFunc("/hook/notification", s.hookNotifications())
 	//s.router.HandleFunc("/api/notifications/", s.handleSingleNotifs())
-	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./web/public"))))
+	s.router.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./public"))))
 }
 
 func (s *server) handleHello() http.HandlerFunc {
@@ -71,7 +70,7 @@ func (s *server) handleDefault() http.HandlerFunc {
 func (s *server) portal() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Consumer Manual Tester Page!!")
-		tpl := template.Must(template.ParseFiles("./web/template/ManualTester.html"))
+		tpl := template.Must(template.ParseFiles("./template/ManualTester.html"))
 		w.Header().Set("Content-Type", "text/html")
 
 		err := tpl.Execute(w, map[string]string{"APIKEY": os.Getenv("APIKEY")})
@@ -82,8 +81,3 @@ func (s *server) portal() http.HandlerFunc {
 }
 
 type jsonmap map[string]interface{}
-
-func getFootway() ([]byte, error) {
-	path := "./data/osm/ways_on_browser.json"
-	return ioutil.ReadFile(path)
-}

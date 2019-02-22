@@ -12,7 +12,7 @@ import (
 
 func TestServer(t *testing.T) {
 	// No log
-	log.SetOutput(ioutil.Discard)
+	//log.SetOutput(ioutil.Discard)
 
 	tests := []struct {
 		method string
@@ -25,6 +25,7 @@ func TestServer(t *testing.T) {
 		{method: "GET", url: "/static", status: http.StatusMovedPermanently},
 		{method: "GET", url: "/static/index.html", status: http.StatusMovedPermanently},
 		{method: "GET", url: "/no_page", status: http.StatusMovedPermanently},
+		{method: "GET", url: "/footway", status: http.StatusOK},
 	}
 	srv := newServer()
 	srv.routes()

@@ -16,7 +16,8 @@ rambler: ./web/rambler/*.go
 
 .PHONY: web
 web: ./web/*.go
-	go build -o smfweb ./web
+	#go build -o smfweb ./web
+	go build -o ./web/smfweb ./web
 
 size:
 	find . -name \*.go -or -name \*.js | grep -v _test | xargs wc -l
