@@ -165,8 +165,7 @@ func (s *server) handlePostFlyers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Webhook
-	endpoint := "http://localhost:8000/hook/notification"
-	if err := flyer.Sethook(endpoint); err != nil {
+	if err := flyer.Sethook(s.notificationEndpoint()); err != nil {
 		log.Printf("Sethook Flyer error: (%v) flyer:%v\n", err, flyer)
 		w.WriteHeader(http.StatusInternalServerError)
 		return

@@ -18,6 +18,7 @@ import (
 func TestAPILocations(t *testing.T) {
 	// No log
 	log.SetOutput(ioutil.Discard)
+	db.DropLocation()
 
 	now := time.Now().Unix()
 	locations := []*db.Location{

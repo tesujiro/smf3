@@ -16,7 +16,8 @@ import (
 func (s *server) hookNotifications() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
-		case http.MethodPost, http.MethodGet: // Only Get??
+		//case http.MethodPost, http.MethodGet: // Only POST??
+		case http.MethodPost:
 			s.hookNotification(w, r)
 			return
 		default:
@@ -39,10 +40,11 @@ type WebhookRequest struct {
 }
 
 func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Received Webhook request!\n")
+	//log.Printf("[Webhook] Received Webhook request!\n")
 
 	length, err := strconv.Atoi(r.Header.Get("Content-Length"))
 	if err != nil {
+		log.Printf("[Webhook] Webhook request Content-Length conversion error :%s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -50,6 +52,7 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 	body := make([]byte, length)
 	length, err = r.Body.Read(body)
 	if err != nil && err != io.EOF {
+		log.Printf("[Webhook] Webhook request read error :%s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -57,56 +60,56 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 	var wr WebhookRequest
 	err = json.Unmarshal(body[:length], &wr)
 	if err != nil {
-		log.Printf("Webhook request unmarshal error :%s\n", err)
+		log.Printf("[Webhook] Webhook request unmarshal error :%s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	//log.Printf("Request.Body: %s", wr)
+	log.Printf("[Webhook] Request.Body: %s", wr)
 
 	// FlyerID
 	if len(strings.Split(wr.Hook, ":")) != 2 {
-		log.Printf("Webhook request has wrong flyer id.:%s\n", wr.Key)
+		log.Printf("[Webhook] Webhook request has wrong hook id. Key:%s ID:%v\n", wr.Key, wr.Hook)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	flyerID := strings.Split(wr.Hook, ":")[1]
 	flyer, err := db.GetFlyer(flyerID)
 	if err != nil {
-		log.Printf("DB get flyer error: %s\n", err)
+		log.Printf("[Webhook] DB get flyer error: %s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	if flyer == nil {
-		log.Printf("Flyer not found: flyer id:%s\n", flyerID)
+		log.Printf("[Webhook] Flyer not found: flyer id:%s\n", flyerID)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	//fmt.Printf("flyer=%#v\n", flyer)
 
 	// GeoJson
 	var feature db.GeoJsonFeature
 	//fmt.Printf("Object=%s\n", wr.Object)
 	err = json.Unmarshal(wr.Object, &feature)
 	if err != nil {
-		log.Printf("Webhook request GeoJsonFeature unmarshal error :%s\n", err)
+		log.Printf("[Webhook] Webhook request GeoJsonFeature unmarshal error :%s\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	fmt.Printf("feature=%#v\n", feature)
+	//fmt.Printf("feature=%#v\n", feature)
 
 	loc, err := db.LocationFromFeature(feature)
 	if err != nil {
-		log.Printf("GeoJsonFeatue conversion error: %s feature(%s)\n", err, feature)
+		log.Printf("[Webhook] GeoJsonFeatue conversion error: %s feature(%s)\n", err, feature)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	err = s.CreateNotification(*flyer, *loc)
 	if err != nil {
-		log.Printf("Create notification error: %s geometry(%s)\n", err, feature.Geometry)
+		log.Printf("[Webhook] Create notification error: %s geometry(%s)\n", err, feature.Geometry)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Printf("webhook finished normally.\n")
+	w.WriteHeader(http.StatusOK)
+	//log.Printf("[Webhook] Webhook finished normally.\n")
 }
 
 func (s *server) CreateNotification(flyer db.Flyer, loc db.Location) error {
@@ -124,20 +127,23 @@ func (s *server) CreateNotification(flyer db.Flyer, loc db.Location) error {
 	if exist, err := db.ExistNotification(n.ID); err != nil {
 		return fmt.Errorf("DB get notification error: %s\n", err)
 	} else if exist {
-		return fmt.Errorf("notification already exists. ID:%v\n", n.ID)
+		//return fmt.Errorf("notification already exists. ID:%v\n", n.ID)
+		log.Printf("notification already exists. ID:%v\n", n.ID)
+		return nil
 	}
 
 	// check stock
 	if flyer.Stocked <= 0 {
-		log.Printf("No flyer stock.\n")
-		return nil
+		//log.Printf("No flyer stock.\n")
+		//return nil
+		return fmt.Errorf("No flyer stock. flyer ID:%v\n", flyer.ID)
 	}
 
 	err := n.Set()
 	if err != nil {
 		return fmt.Errorf("DB set notification error: %s\n", err)
 	}
-	log.Printf("Set notification: %#v\n", n)
+	//log.Printf("Set notification: %#v\n", n)
 
 	flyer.Stocked--
 	flyer.Delivered++

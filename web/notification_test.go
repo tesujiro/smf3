@@ -18,6 +18,7 @@ import (
 func TestAPINotification(t *testing.T) {
 	// No log
 	log.SetOutput(ioutil.Discard)
+	db.DropNotification()
 
 	now := time.Now().Unix()
 	notifs := []*db.Notification{

@@ -13,15 +13,24 @@ import (
 
 type server struct {
 	router *http.ServeMux
+	addr   string
 }
 
 func newServer() *server {
+	addr := "localhost:8000"
 	return &server{
 		router: http.NewServeMux(),
+		addr:   addr,
 	}
 }
 
+func (s *server) notificationEndpoint() string {
+	return "http://" + s.addr + "/hook/notification"
+}
+
 func main() {
+	log.SetFlags(log.Lmicroseconds)
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -32,7 +41,7 @@ func main() {
 	// START WEB SERVER
 	s := newServer()
 	s.routes()
-	http.ListenAndServe("localhost:8000", s.router)
+	http.ListenAndServe(s.addr, s.router)
 
 	<-ctx.Done()
 }
