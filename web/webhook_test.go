@@ -37,7 +37,12 @@ func TestE2EWebhook(t *testing.T) {
 	srv := newServer()
 	srv.addr = "localhost:8081"
 	srv.routes()
-	go http.ListenAndServe(srv.addr, srv.router)
+	go func() {
+		err := http.ListenAndServe(srv.addr, srv.router)
+		if err != nil {
+			t.Fatalf("http server: %v\n", err)
+		}
+	}()
 	// must wait here??
 
 	// Post flyers
