@@ -43,7 +43,6 @@ func TestE2EWebhook(t *testing.T) {
 			t.Fatalf("http server: %v\n", err)
 		}
 	}()
-	// must wait here??
 	time.Sleep(10 * time.Millisecond)
 
 	// Post flyers
