@@ -44,6 +44,7 @@ func TestE2EWebhook(t *testing.T) {
 		}
 	}()
 	// must wait here??
+	time.Sleep(10 * time.Millisecond)
 
 	// Post flyers
 	for _, flyer := range flyers {
