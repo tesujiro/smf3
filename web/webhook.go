@@ -22,8 +22,8 @@ func (s *server) hookNotifications() http.HandlerFunc {
 			s.hookNotification(w, r)
 			return
 		default:
-			log.Printf("Http method error. Not Post nor Get : %v\n", r.Method)
-			w.WriteHeader(http.StatusInternalServerError)
+			log.Printf("Http method error. Not Post : %v\n", r.Method)
+			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 	}
@@ -70,7 +70,7 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 	// FlyerID
 	if len(strings.Split(wr.Hook, ":")) != 2 {
 		log.Printf("[Webhook] Webhook request has wrong hook id. Key:%s ID:%v\n", wr.Key, wr.Hook)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}
 	flyerID := strings.Split(wr.Hook, ":")[1]
@@ -82,7 +82,7 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 	}
 	if flyer == nil {
 		log.Printf("[Webhook] Flyer not found: flyer id:%s\n", flyerID)
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusNotAcceptable)
 		return
 	}
 

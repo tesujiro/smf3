@@ -5,20 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/tesujiro/smf3/data/db"
+	"github.com/tesujiro/smf3/debug"
 )
 
 func TestAPIFlyers(t *testing.T) {
-	// No log
-	log.SetOutput(ioutil.Discard)
-
 	now := time.Now().Unix()
 	flyers := []*db.Flyer{
 		&db.Flyer{OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
@@ -82,7 +78,7 @@ func TestAPIFlyers(t *testing.T) {
 		w := httptest.NewRecorder()
 		srv.router.ServeHTTP(w, req)
 		r := w.Result()
-		//fmt.Printf("Result:%#v\n", r)
+		debug.Printf("Result:%#v\n", r)
 		if test.status == 0 && r.StatusCode != http.StatusOK ||
 			test.status != 0 && r.StatusCode != test.status {
 			fmt.Printf("result:%#v\n", r)
@@ -91,7 +87,7 @@ func TestAPIFlyers(t *testing.T) {
 		if test.status != 0 {
 			continue
 		}
-		//fmt.Printf("header.Location:%#v\n", r.Header["Location"])
+		debug.Printf("header.Location:%#v\n", r.Header["Location"])
 		switch test.method {
 		case http.MethodPost:
 			// Check Database
@@ -113,7 +109,7 @@ func TestAPIFlyers(t *testing.T) {
 				fmt.Printf("result:%#v\n", r)
 				t.Errorf("Test[%v] method:%v url:%v Data Error. [%v]", test_number, test.method, test.url, string(data))
 			}
-			//fmt.Printf("Body:%v\n", string(data))
+			debug.Printf("Body:%v\n", string(data))
 			var actualFlyers []*db.Flyer
 			if err := json.Unmarshal(data, &actualFlyers); err != nil {
 				t.Errorf("Test[%v] Response body json.Unmarshal error: %v", test_number, err)
@@ -126,5 +122,4 @@ func TestAPIFlyers(t *testing.T) {
 
 	//DELETE TEST DATA
 	db.DropFlyer()
-	log.SetOutput(os.Stdout)
 }

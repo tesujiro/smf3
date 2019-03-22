@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -15,10 +14,6 @@ import (
 )
 
 func TestE2EWebhook(t *testing.T) {
-	// No log
-	//log.SetOutput(ioutil.Discard)
-	log.SetFlags(log.Lmicroseconds)
-
 	now := time.Now().Unix()
 	flyers := []*db.Flyer{
 		&db.Flyer{OwnerID: 1, Title: "title01", ValidPeriod: 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
@@ -86,12 +81,10 @@ func TestE2EWebhook(t *testing.T) {
 	}()
 	db.DropFlyer()
 	db.DropNotification()
-	log.SetOutput(os.Stdout)
 }
 
 func TestWebhook(t *testing.T) {
 	// No log
-	//log.SetOutput(ioutil.Discard)
 
 	now := time.Now().Unix()
 	geometry := &db.Geometry{
@@ -107,6 +100,13 @@ func TestWebhook(t *testing.T) {
 	}
 	//fmt.Printf("feature_json=%s\n", feature_json)
 
+	flyerData := []*db.Flyer{
+		// flyerID[0] normal
+		&db.Flyer{ID: 1, OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
+		// flyerID[0] no flyer stock
+		&db.Flyer{ID: 2, OwnerID: 1, Title: "title02", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 0, Delivered: 0},
+	}
+
 	requestData := []*WebhookRequest{
 		// requestData[0] normal
 		&WebhookRequest{Command: "set", Group: "", Detect: "enter", Hook: "flyerhook:1", Key: "location", Id: "1:1", Object: feature_json},
@@ -116,13 +116,6 @@ func TestWebhook(t *testing.T) {
 		&WebhookRequest{Command: "set", Group: "", Detect: "enter", Hook: "flyerhook:10000", Key: "location", Id: "1:1", Object: feature_json},
 		// requestData[3] no flyer stock
 		&WebhookRequest{Command: "set", Group: "", Detect: "enter", Hook: "flyerhook:2", Key: "location", Id: "1:1", Object: feature_json},
-	}
-
-	flyerData := []*db.Flyer{
-		// flyerID[0] normal
-		&db.Flyer{ID: 1, OwnerID: 1, Title: "title01", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 100, Delivered: 0},
-		// flyerID[0] no flyer stock
-		&db.Flyer{ID: 2, OwnerID: 1, Title: "title02", ValidPeriod: 3600, StartAt: now, EndAt: now + 3600, Lat: 0, Lon: 0, Distance: 100, Stocked: 0, Delivered: 0},
 	}
 
 	tests := []struct {
@@ -135,13 +128,13 @@ func TestWebhook(t *testing.T) {
 		// tests[0] normal
 		{method: "POST", request: requestData[0], url: "/hook/notification", status: 200},
 		// tests[1] wrong http method
-		{method: "GET", request: requestData[0], url: "/hook/notification", status: 500},
+		{method: "GET", request: requestData[0], url: "/hook/notification", status: 405},
 		// tests[2] wrong hook ID
-		{method: "POST", request: requestData[1], url: "/hook/notification", status: 500},
+		{method: "POST", request: requestData[1], url: "/hook/notification", status: 406},
 		// tests[3] flyer does not exist
-		{method: "POST", request: requestData[2], url: "/hook/notification", status: 500},
+		{method: "POST", request: requestData[2], url: "/hook/notification", status: 406},
 		// tests[4] no flyer stock
-		{method: "POST", request: requestData[3], url: "/hook/notification", status: 500},
+		{method: "POST", request: requestData[3], url: "/hook/notification", status: 200},
 	}
 
 	// SET DATA
@@ -197,5 +190,4 @@ func TestWebhook(t *testing.T) {
 
 	//DELETE TEST DATA
 	db.DropFlyer()
-	log.SetOutput(os.Stdout)
 }

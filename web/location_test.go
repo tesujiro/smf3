@@ -5,19 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 
 	"github.com/tesujiro/smf3/data/db"
+	"github.com/tesujiro/smf3/debug"
 )
 
 func TestAPILocations(t *testing.T) {
-	// No log
-	log.SetOutput(ioutil.Discard)
 	db.DropLocation()
 
 	now := time.Now().Unix()
@@ -81,7 +78,7 @@ func TestAPILocations(t *testing.T) {
 		w := httptest.NewRecorder()
 		srv.router.ServeHTTP(w, req)
 		r := w.Result()
-		//fmt.Printf("Result:%#v\n", r)
+		debug.Printf("Result:%#v\n", r)
 		if test.status == 0 && r.StatusCode != http.StatusOK ||
 			test.status != 0 && r.StatusCode != test.status {
 			fmt.Printf("result:%#v\n", r)
@@ -114,7 +111,7 @@ func TestAPILocations(t *testing.T) {
 				fmt.Printf("result:%#v\n", r)
 				t.Errorf("Test[%v] method:%v url:%v Data Error. [%v]", test_number, test.method, test.url, string(data))
 			}
-			//fmt.Printf("Body:%v\n", string(data))
+			debug.Printf("Body:%v\n", string(data))
 			var actualLocations []*db.Location
 			if err := json.Unmarshal(data, &actualLocations); err != nil {
 				t.Errorf("Test[%v] Response body json.Unmarshal error: %v", test_number, err)
@@ -127,5 +124,4 @@ func TestAPILocations(t *testing.T) {
 
 	//DELETE TEST DATA
 	db.DropLocation()
-	log.SetOutput(os.Stdout)
 }

@@ -3,17 +3,14 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
+
+	"github.com/tesujiro/smf3/debug"
 )
 
 func TestServer(t *testing.T) {
-	// No log
-	//log.SetOutput(ioutil.Discard)
-
 	tests := []struct {
 		method string
 		url    string
@@ -37,13 +34,13 @@ func TestServer(t *testing.T) {
 		w := httptest.NewRecorder()
 		srv.router.ServeHTTP(w, req)
 		r := w.Result()
-		//fmt.Printf("Result:%#v\n", r)
+		debug.Printf("Result:%#v\n", r)
 		if test.status == 0 && r.StatusCode != http.StatusOK ||
 			test.status != 0 && r.StatusCode != test.status {
 			fmt.Printf("result:%#v\n", r)
 			t.Errorf("method:%v url:%v StatusCode:%v", test.method, test.url, r.StatusCode)
 		}
-		//fmt.Printf("header.Location:%#v\n", r.Header["Location"])
+		debug.Printf("header.Location:%#v\n", r.Header["Location"])
 		data, err := ioutil.ReadAll(r.Body)
 		if err != nil {
 			fmt.Printf("result:%#v\n", r)
@@ -54,5 +51,4 @@ func TestServer(t *testing.T) {
 			t.Errorf("method:%v url:%v Data Error. [%v]", test.method, test.url, string(data))
 		}
 	}
-	log.SetOutput(os.Stdout)
 }
