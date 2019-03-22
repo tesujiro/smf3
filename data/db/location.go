@@ -23,11 +23,11 @@ func NewLocationID() int64 {
 func LocationFromFeature(feature GeoJsonFeature) (*Location, error) {
 	c, err := feature.Geometry.GetCoordinatesObject()
 	if err != nil {
-		return nil, fmt.Errorf("Geometry conversion error: %s geometry(%s)\n", err, feature.Geometry)
+		return nil, fmt.Errorf("Geometry conversion error: %s geometry(%s)", err, feature.Geometry)
 	}
 	point, ok := c.(*Point)
 	if !ok {
-		return nil, fmt.Errorf("Coordinates conversion error: not point format:%s\n", feature.Geometry)
+		return nil, fmt.Errorf("Coordinates conversion error: not point format:%s", feature.Geometry)
 	}
 
 	loc := Location{

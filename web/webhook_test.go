@@ -35,7 +35,7 @@ func TestE2EWebhook(t *testing.T) {
 
 	// Start Server
 	srv := newServer()
-	srv.addr = "localhost:8081"
+	//srv.addr = "localhost:8081"
 	srv.routes()
 	go func() {
 		err := http.ListenAndServe(srv.addr, srv.router)
@@ -66,8 +66,8 @@ func TestE2EWebhook(t *testing.T) {
 		defer r.Body.Close()
 
 		if r.StatusCode != http.StatusOK {
-			fmt.Printf("result:%#v\n", r)
-			t.Errorf("get StatusCode:%v", r.StatusCode)
+			fmt.Printf("Post flyer result:%#v\n", r)
+			t.Errorf("Post flyer get StatusCode:%v", r.StatusCode)
 		}
 	}
 
@@ -76,7 +76,7 @@ func TestE2EWebhook(t *testing.T) {
 		time.Sleep(2 * time.Millisecond)
 		err := loc.Set()
 		if err != nil {
-			t.Errorf("Set Location error: %v\n", err)
+			t.Errorf("Set Location error: %v", err)
 		}
 	}
 
@@ -98,12 +98,6 @@ func TestWebhook(t *testing.T) {
 		Type:        "Point",
 		Coordinates: []byte(fmt.Sprintf("[%v,%v]", 1.2345, 100.2003)),
 	}
-	/*
-		geometry_json, err := json.Marshal(geometry)
-		if err != nil {
-			t.Fatalf("JSON Marshal error: %v", err)
-		}
-	*/
 
 	feature := &db.GeoJsonFeature{Type: "Feature", Geometry: geometry, Properties: map[string]interface{}{"id": float64(1), "time": float64(now)}}
 
@@ -111,7 +105,7 @@ func TestWebhook(t *testing.T) {
 	if err != nil {
 		t.Fatalf("JSON Marshal error: %v", err)
 	}
-	fmt.Printf("feature_json=%s\n", feature_json)
+	//fmt.Printf("feature_json=%s\n", feature_json)
 
 	requestData := []*WebhookRequest{
 		// requestData[0] normal
@@ -155,7 +149,6 @@ func TestWebhook(t *testing.T) {
 		if err := flyer.Set(); err != nil {
 			t.Fatalf("Set Flyer error: (%v) flyer:%v\n", err, flyer)
 		}
-		fmt.Printf("flyer.ID=%v\n", flyer.ID)
 	}
 
 	// Start Server

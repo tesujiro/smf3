@@ -1,6 +1,6 @@
 package debug
 
-import "fmt"
+import "log"
 
 var debug bool
 
@@ -14,12 +14,12 @@ func Off() {
 
 func Println(a ...interface{}) {
 	if debug {
-		fmt.Println(a...)
+		log.Println(a...)
 	}
 }
 
 func Printf(format string, a ...interface{}) {
 	if debug {
-		fmt.Printf(format, a...)
+		log.Printf(format, a...)
 	}
 }

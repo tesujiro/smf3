@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/tesujiro/smf3/data/db"
+	"github.com/tesujiro/smf3/debug"
 )
 
 func (s *server) hookNotifications() http.HandlerFunc {
@@ -40,7 +41,7 @@ type WebhookRequest struct {
 }
 
 func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
-	//log.Printf("[Webhook] Received Webhook request!\n")
+	debug.Printf("[Webhook] Received Webhook request!\n")
 
 	length, err := strconv.Atoi(r.Header.Get("Content-Length"))
 	if err != nil {
@@ -64,7 +65,7 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	log.Printf("[Webhook] Request.Body: %s", wr)
+	debug.Printf("[Webhook] Request.Body: %s", wr)
 
 	// FlyerID
 	if len(strings.Split(wr.Hook, ":")) != 2 {
@@ -109,7 +110,7 @@ func (s *server) hookNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	//log.Printf("[Webhook] Webhook finished normally.\n")
+	debug.Printf("[Webhook] Webhook finished normally.\n")
 }
 
 func (s *server) CreateNotification(flyer db.Flyer, loc db.Location) error {
@@ -125,35 +126,33 @@ func (s *server) CreateNotification(flyer db.Flyer, loc db.Location) error {
 
 	// check notification exists
 	if exist, err := db.ExistNotification(n.ID); err != nil {
-		return fmt.Errorf("DB get notification error: %s\n", err)
+		return fmt.Errorf("DB get notification error: %s", err)
 	} else if exist {
-		//return fmt.Errorf("notification already exists. ID:%v\n", n.ID)
-		log.Printf("notification already exists. ID:%v\n", n.ID)
+		debug.Printf("[Webhook] notification already exists. ID:%v", n.ID)
 		return nil
 	}
 
 	// check stock
 	if flyer.Stocked <= 0 {
-		//log.Printf("No flyer stock.\n")
-		//return nil
-		return fmt.Errorf("No flyer stock. flyer ID:%v\n", flyer.ID)
+		debug.Printf("[Webhook] No flyer stock. flyer ID:%v", flyer.ID)
+		return nil
 	}
 
 	err := n.Set()
 	if err != nil {
-		return fmt.Errorf("DB set notification error: %s\n", err)
+		return fmt.Errorf("DB set notification error: %s", err)
 	}
-	//log.Printf("Set notification: %#v\n", n)
+	debug.Printf("[Webhook] Set notification: %#v\n", n)
 
 	flyer.Stocked--
 	flyer.Delivered++
 	err = flyer.Jset("properties.stocked", flyer.Stocked)
 	if err != nil {
-		return fmt.Errorf("DB set flyer stocked error: %s\n", err)
+		return fmt.Errorf("DB set flyer stocked error: %s", err)
 	}
 	err = flyer.Jset("properties.delivered", flyer.Delivered)
 	if err != nil {
-		return fmt.Errorf("DB set flyer delivered error: %s\n", err)
+		return fmt.Errorf("DB set flyer delivered error: %s", err)
 	}
 	return nil
 }
